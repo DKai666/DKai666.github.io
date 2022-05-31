@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Only My Baby</title>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+                integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+        <style>
+                .on:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #ececec;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(3, 99, 0);
+                        box-sizing: border-box;
+                }
+
+                .on:checked:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #02e428;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(3, 99, 0);
+                        box-sizing: border-box;
+                }
+
+                .night:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #d1d3d1;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(0, 23, 126);
+                        box-sizing: border-box;
+                }
+
+                .night:checked:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #0041ce;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(0, 23, 126);
+                        box-sizing: border-box;
+                }
+
+                .off:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #d1d3d1;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(0, 0, 0);
+                        box-sizing: border-box;
+                }
+
+                .off:checked:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #575757;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(0, 0, 0);
+                        box-sizing: border-box;
+                }
+
+                .late:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #d1d3d1;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(134, 0, 0);
+                        box-sizing: border-box;
+                }
+
+                .late:checked:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #ee0000;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(134, 0, 0);
+                        box-sizing: border-box;
+                }
+
+                .noMeet:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #d1d3d1;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(180, 108, 0);
+                        box-sizing: border-box;
+                }
+
+                .noMeet:checked:after {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 15px;
+                        position: relative;
+                        background-color: #ffa600;
+                        content: '';
+                        display: inline-block;
+                        visibility: visible;
+                        border: 2px solid rgb(180, 108, 0);
+
+                }
+
+                .bi {
+                        display: flex;
+                        flex-wrap: wrap;
+                }
+
+                label {
+                        display: flex;
+                        margin: 5px 20px 5px 0px;
+                        font-size: large;
+                        font-size: larger;
+                }
+
+                label input {
+                        display: flex;
+                        margin-left: 10px;
+                        width: 30px;
+                        height: 30px;
+
+                }
+
+                .color p {
+                        display: inline;
+                        font-size: large;
+                }
+
+                button {
+                        font-size: larger;
+                }
+
+                .Clean {
+                        border: none;
+                        background-color: transparent;
+                        position: relative;
+                        top: -2px;
+                        color: rgb(75, 18, 18);
+                }
+        </style>
+</head>
+
+<body>
+        <h3 class="date" style="color: rgb(255, 198, 208)"></h3>
+        <h3 class="word" style="color: rgba(65, 68, 247, 0.527)"></h3>
+        <div class="color">
+                <b>
+                        <p class="sun" style="color: #02e428">日班</p>
+                        <!-- <p class="moon" style="color: #0041ce">夜班</p> -->
+                        <p class="rest" style="color: #575757">休假</p>
+                        <p class="latee" style="color: #ee0000">遲到</p>
+                        <p class="nomeeting" style="color: #ffa600">到了未參加工具箱</p>
+                </b>
+        </div>
+        <H2>必成</H2>
+        <div class="bi">
+                <label><input type="radio" class="on" name="張家彬"><!-- <input type="radio" class="night" name="張家彬"> -->
+                        <input type="radio" class="off" name="張家彬"><input type="radio" class="late" name="張家彬"><input
+                                type="radio" class="noMeet" name="張家彬">張家彬<button name="張家彬"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="陳政宏"><!-- <input type="radio" class="night" name="陳政宏"> -->
+                        <input type="radio" class="off" name="陳政宏"><input type="radio" class="late" name="陳政宏"><input
+                                type="radio" class="noMeet" name="陳政宏">陳政宏<button name="陳政宏"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="葉威宏"><!-- <input type="radio" class="night" name="葉威宏"> -->
+                        <input type="radio" class="off" name="葉威宏"><input type="radio" class="late" name="葉威宏"><input
+                                type="radio" class="noMeet" name="葉威宏">葉威宏<button name="葉威宏"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="湯欽貴"><!-- <input type="radio" class="night" name="湯欽貴"> -->
+                        <input type="radio" class="off" name="湯欽貴"><input type="radio" class="late" name="湯欽貴"><input
+                                type="radio" class="noMeet" name="湯欽貴">湯欽貴<button name="湯欽貴"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="陳志賢"><!-- <input type="radio" class="night" name="陳志賢"> -->
+                        <input type="radio" class="off" name="陳志賢"><input type="radio" class="late" name="陳志賢"><input
+                                type="radio" class="noMeet" name="陳志賢">陳志賢<button name="陳志賢"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="吳倫銓"><!-- <input type="radio" class="night" name="吳倫銓"> -->
+                        <input type="radio" class="off" name="吳倫銓"><input type="radio" class="late" name="吳倫銓"><input
+                                type="radio" class="noMeet" name="吳倫銓">吳倫銓<button name="吳倫銓"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="詹秉翰"><!-- <input type="radio" class="night" name="詹秉翰"> -->
+                        <input type="radio" class="off" name="詹秉翰"><input type="radio" class="late" name="詹秉翰"><input
+                                type="radio" class="noMeet" name="詹秉翰">詹秉翰<button name="詹秉翰"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="謝侑達"><!-- <input type="radio" class="night" name="謝侑達"> -->
+                        <input type="radio" class="off" name="謝侑達"><input type="radio" class="late" name="謝侑達"><input
+                                type="radio" class="noMeet" name="謝侑達">謝侑達<button name="謝侑達"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="江秉哲"><!-- <input type="radio" class="night" name="江秉哲"> -->
+                        <input type="radio" class="off" name="江秉哲"><input type="radio" class="late" name="江秉哲"><input
+                                type="radio" class="noMeet" name="江秉哲">江秉哲<button name="江秉哲"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="楊正暉"><!-- <input type="radio" class="night" name="楊正暉"> -->
+                        <input type="radio" class="off" name="楊正暉"><input type="radio" class="late" name="楊正暉"><input
+                                type="radio" class="noMeet" name="楊正暉">楊正暉<button name="楊正暉"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="鄭靖楊"><!-- <input type="radio" class="night" name="鄭靖楊"> -->
+                        <input type="radio" class="off" name="鄭靖楊"><input type="radio" class="late" name="鄭靖楊"><input
+                                type="radio" class="noMeet" name="鄭靖楊">鄭靖楊<button name="鄭靖楊"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="蔡易哲"><!-- <input type="radio" class="night" name="蔡易哲"> -->
+                        <input type="radio" class="off" name="蔡易哲"><input type="radio" class="late" name="蔡易哲"><input
+                                type="radio" class="noMeet" name="蔡易哲">蔡易哲<button name="蔡易哲"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="王人偉"><!-- <input type="radio" class="night" name="王人偉"> -->
+                        <input type="radio" class="off" name="王人偉"><input type="radio" class="late" name="王人偉"><input
+                                type="radio" class="noMeet" name="王人偉">王人偉<button name="王人偉"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="梁峻豪"><!-- <input type="radio" class="night" name="梁峻豪"> -->
+                        <input type="radio" class="off" name="梁峻豪"><input type="radio" class="late" name="梁峻豪"><input
+                                type="radio" class="noMeet" name="梁峻豪">梁峻豪<button name="梁峻豪"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="簡日政"><!-- <input type="radio" class="night" name="簡日政"> -->
+                        <input type="radio" class="off" name="簡日政"><input type="radio" class="late" name="簡日政"><input
+                                type="radio" class="noMeet" name="簡日政">簡日政<button name="簡日政"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="郭重偉"><!-- <input type="radio" class="night" name="郭重偉"> -->
+                        <input type="radio" class="off" name="郭重偉"><input type="radio" class="late" name="郭重偉"><input
+                                type="radio" class="noMeet" name="郭重偉">郭重偉<button name="郭重偉"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="謝志忠"><!-- <input type="radio" class="night" name="謝志忠"> -->
+                        <input type="radio" class="off" name="謝志忠"><input type="radio" class="late" name="謝志忠"><input
+                                type="radio" class="noMeet" name="謝志忠">謝志忠<button name="謝志忠"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="洪國智"><!-- <input type="radio" class="night" name="洪國智"> -->
+                        <input type="radio" class="off" name="洪國智"><input type="radio" class="late" name="洪國智"><input
+                                type="radio" class="noMeet" name="洪國智">洪國智<button name="洪國智"
+                                class="Clean">X</button></label>
+                <label><input type="radio" class="on" name="蔡旻哲"><!-- <input type="radio" class="night" name="蔡旻哲"> -->
+                        <input type="radio" class="off" name="蔡旻哲"><input type="radio" class="late" name="蔡旻哲"><input
+                                type="radio" class="noMeet" name="蔡旻哲">蔡旻哲<button name="蔡旻哲"
+                                class="Clean">X</button></label>
+        </div>
+        <br>
+        <button onclick="CreatList()">產生表單</button>
+        <button class="bicopy" onclick="copy()">複製</button>
+        <HR>
+        </HR>
+        <div class="LateArea">
+        </div>
+        <script>
+                window.onload = function () {
+                        var today = new Date();
+                        var todayDate = new Date(`${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`);
+                        var startDate = new Date("11/14/2021");
+                        var Howlong = Math.abs(todayDate - startDate);
+                        document.querySelector(".date").innerHTML = `Love you ${Howlong / (1000 * 3600 * 24) + 1}th Day`
+                }
+                $('.Clean').click(function (e) {
+                        var CleanName = document.getElementsByName(event.target.name);
+                        for (i = 0; i < CleanName.length - 1; i++) {
+                                CleanName[i].checked = false;
+                        }
+                });
+                function CreatList() {
+                        let LatePeople = new Array();
+                        let NoMeetPeople = new Array();
+                        document.querySelectorAll(".on").forEach(function (e) {
+                                if (document.getElementsByName(e.name)[2].checked) { LatePeople.push(e.name) };
+                                if (document.getElementsByName(e.name)[3].checked) { NoMeetPeople.push(e.name) };
+                        })
+                        $('.LateArea').html('<div class="LateList"></div><button class="enterLate" onclick="enterLatePeople();">紀錄遲到資料</button>');
+                        let List = '<h4>遲到</h4>';
+                        //LatePeople.forEach(function (name) {
+                        List = List + `<p class="lateP" style="display:inline-block">${LatePeople.toString()}</p><br>`
+                        //List = List + `<p class="lateP" style="display:inline-block">${name}</p><input class="lateR" type="text" value=""><br>`/})
+                        List = List + '<h4>到了未參加工具箱</h4>';
+                        NoMeetPeople.forEach(function (name) {
+                                if (name == "張家彬" || name == "陳政宏") {
+                                        List = List + `<p class="nomeetP" style="display:inline-block">${name}</p><input class="nomeetR" type="text" value="開貨車"><br>`
+                                } else {
+                                        List = List + `<p class="nomeetP" style="display:inline-block">${name}</p><input class="nomeetR" type="text" value=""><br>`
+                                }
+                        })
+                        $('.LateList').html(List);
+                }
+                function copy() {
+                        let allInput = document.querySelectorAll(".on");
+                        let OnPeople = new Array();
+                        // let NightPeople = new Array();
+                        let OffPeople = new Array();
+                        let LatePeople = new Array();
+                        let NoMeetPeople = new Array();
+                        allInput.forEach(function (e) {
+                                if (document.getElementsByName(e.name)[0].checked) { OnPeople.push(e.name) };
+                                // if (document.getElementsByName(e.name)[1].checked) { NightPeople.push(e.name) };
+                                if (document.getElementsByName(e.name)[1].checked) { OffPeople.push(e.name) };
+                        })
+                        document.querySelectorAll('.lateP').forEach(function (item) {
+                                LatePeople.push(item.innerHTML);
+                        })
+                        document.querySelectorAll('.nomeetP').forEach(function (item, i) {
+                                if (document.querySelectorAll('.nomeetR')[i].value != "") {
+                                        NoMeetPeople.push(`${item.innerHTML}(${document.querySelectorAll('.nomeetR')[i].value})`);
+                                } else {
+                                        NoMeetPeople.push(item.innerHTML);
+                                }
+                        })
+                        let copyString = `${new Date().getMonth() + 1}/${new Date().getDate()}(8:15)`;
+                        if (LatePeople.length > 0) { copyString += `\n\n遲到：${LatePeople.toString()}`; }
+                        if (NoMeetPeople.length > 0) { copyString += `\n\n到了未參加工具箱會議：${NoMeetPeople.toString()}`; }
+                        if (LatePeople.length == 0 && NoMeetPeople.length == 0) { copyString += `\n\n工具箱會議遲到及未參加人員：無`; }
+                        copyString += `\n\n出勤人員：${OnPeople.toString()}\n\n休假人員：${OffPeople.toString()}`
+                        // if (LatePeople.length == 0 && NoMeetPeople.length == 0) { copyString += `\n\n工具箱會議遲到及未參加人員：無`; }
+                        // copyString += `\n\n出勤人員：${OnPeople.toString()}\n\n夜班人員：${NightPeople.toString()}\n\n休假人員：${OffPeople.toString()}`
+                        copyInput(copyString);
+                }
+                function copyInput(copyString) {
+                        let txa = document.createElement('textarea');
+                        txa.value = copyString;
+                        document.body.appendChild(txa);
+                        txa.select();
+                        var res = document.execCommand('copy');
+                        document.execCommand('copy');
+                        document.execCommand('copy');
+                        document.execCommand('copy');
+                        document.body.removeChild(txa);
+                }
+                function enterLatePeople() {
+                        let allInput = document.querySelectorAll(".on");
+                        let OOnList = new Array();
+                        let OOffList = new Array();
+                        let LLateList = new Array();
+                        let NNoMeetList = new Array();
+                        let NNoMeetReason = new Array();
+                        allInput.forEach(function (e) {
+                                if (document.getElementsByName(e.name)[0].checked) { OOnList.push(e.name) };
+                                if (document.getElementsByName(e.name)[1].checked) { OOffList.push(e.name) };
+                        })
+                        document.querySelectorAll('.lateP').forEach(function (item) {
+                                LLateList.push(item.innerHTML);
+                        })
+                        document.querySelectorAll('.nomeetP').forEach(function (item) {
+                                NNoMeetList.push(item.innerHTML);
+                        })
+                        document.querySelectorAll('.nomeetR').forEach(function (item) {
+                                NNoMeetReason.push(item.value);
+                        })
+                        $.ajax({
+                                url: "https://script.google.com/macros/s/AKfycby2mapglQ2M9cvFiEvUiLxKdbJBXKbupOsS26YDrz69eSNkVzWGDa8lVhzeAolT8mO2/exec",
+                                data: {
+                                        date: `${new Date().getMonth() + 1}/${new Date().getDate()}`,
+                                        OnList: OOnList.toString(),
+                                        OffLis: OOffList.toString(),
+                                        LateList: LLateList.toString(),
+                                        NoMeetList: NNoMeetList.toString(),
+                                        NoMeetReason: NNoMeetReason.toString()
+                                },
+                                type: "POST",
+                                dataType: 'text'
+                        });
+                }
+        </script>
+</body>
+
+</html>
