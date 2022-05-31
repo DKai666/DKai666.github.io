@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Only My Baby</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <style>
+        textarea{
+            height: 100px;
+            width: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 class="LoveDate" style="color: rgb(255, 198, 208)"></h1>
+    <h1 class="WaitDate" style="color: rgb(201, 196, 150)"></h1>
+    <h3 class="ForBaby" style="color: rgba(65, 68, 247, 0.527)">Love You Baby</h3>
+    <h3 class="BabyForMe" style="color: rgba(241, 82, 255, 0.527)">321</h3>
+    <textarea></textarea>
+    <button onclick="WriteLetter('Write')">送出</button>
+    <script>
+        window.onload = function () {
+            let today = new Date();
+            let todayDate = new Date(`${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`);
+            let startDate = new Date("11/14/2021");
+            let Howlong = Math.abs(todayDate - startDate);
+            document.querySelector(".LoveDate").innerHTML = `Love you ${Howlong / (1000 * 3600 * 24) + 1}th Day`;
+            WriteLetter("Get");
+            let Deadline=new Date("04/17/2024");
+            let WaitDay= Math.abs(todayDate - Deadline);
+            document.querySelector(".WaitDate").innerHTML = `Wait me for ${WaitDay / (1000 * 3600 * 24) + 1} Days`;
+            WriteLetter("Get");
+        }
+        function WriteLetter(mission) {
+            let text=document.querySelector("textarea").value;
+            $.ajax({
+                url: "https://script.google.com/macros/s/AKfycbxF3dQ8IVuxwkIQfUwtnElbkeK1UICzLmkksSr33WC3ouigaQc2pknCofiakucwhPBC/exec",
+                data: {
+                    mission: mission,
+                    letter: text
+                },
+                type: "POST",
+                dataType: 'text',
+                success: function (result) {
+                    ShowOn(result);
+                }
+            });
+        }
+        function ShowOn(result) {
+            letter=result.split(',')
+            document.querySelector(".BabyForMe").innerText=letter[2];
+        }
+    </script>
+</body>
+
+</html>
