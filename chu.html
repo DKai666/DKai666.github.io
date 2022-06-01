@@ -9,9 +9,58 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"
         integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <style>
-        textarea{
+        textarea {
             height: 100px;
             width: 50%;
+        }
+
+        .dkArea {
+            position: relative;
+            width: 50%;
+            height: 300px;
+            overflow: auto;
+            border-radius: 20px;
+            background-image: linear-gradient(0deg, transparent, rgb(131, 216, 250));
+        }
+
+        .chuArea {
+            width: 50%;
+            height: 300px;
+            overflow: auto;
+            border-radius: 20px;
+            background-image: linear-gradient(0deg, transparent, rgb(251, 149, 255));
+        }
+
+        .Area {
+            position: relative;
+            display: flex;
+            width: 50%;
+        }
+
+        ul li {
+            list-style-type: none;
+        }
+
+        /* .dkArea li {
+            color: rgb(98, 62, 255);
+        } */
+
+        /* .chuArea li {
+            color: rgb(252, 77, 173);
+        } */
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .block {
+            position: absolute;
+            width: 100%;
+            height: 110%;
+            top: 0px;
+            left: 0px;
+            background-image: linear-gradient(180deg, transparent, rgb(255, 255, 255));
+            z-index: 500;
+            pointer-events: none;
         }
     </style>
 </head>
@@ -19,10 +68,16 @@
 <body>
     <h1 class="LoveDate" style="color: rgb(255, 198, 208)"></h1>
     <h1 class="WaitDate" style="color: rgb(201, 196, 150)"></h1>
-    <h3 class="ForBaby" style="color: rgba(65, 68, 247, 0.527)">Love You Baby</h3>
-    <h3 class="BabyForMe" style="color: rgba(241, 82, 255, 0.527)"></h3>
+    <!-- <h3 class="ForBaby" style="color: rgba(65, 68, 247, 0.527)">Love You Baby</h3>
+    <h3 class="BabyForMe" style="color: rgba(241, 82, 255, 0.527)"></h3> -->
     <textarea></textarea>
     <button onclick="WriteLetter('Write')">送出</button>
+    <div class="Area">
+        <div class="block"></div>
+        <ul class="dkArea"></ul>
+        <ul class="chuArea"></ul>
+    </div>
+
     <script>
         window.onload = function () {
             let today = new Date();
@@ -30,16 +85,15 @@
             let startDate = new Date("11/14/2021");
             let Howlong = Math.abs(todayDate - startDate);
             document.querySelector(".LoveDate").innerHTML = `Love you ${Howlong / (1000 * 3600 * 24) + 1}th Day`;
-            WriteLetter("Get");
-            let Deadline=new Date("04/17/2024");
-            let WaitDay= Math.abs(todayDate - Deadline);
+            let Deadline = new Date("04/17/2024");
+            let WaitDay = Math.abs(todayDate - Deadline);
             document.querySelector(".WaitDate").innerHTML = `Wait me for ${WaitDay / (1000 * 3600 * 24) + 1} Days`;
             WriteLetter("Get");
         }
         function WriteLetter(mission) {
-            let text=document.querySelector("textarea").value;
+            let text = document.querySelector("textarea").value;
             $.ajax({
-                url: "https://script.google.com/macros/s/AKfycbxF3dQ8IVuxwkIQfUwtnElbkeK1UICzLmkksSr33WC3ouigaQc2pknCofiakucwhPBC/exec",
+                url: "https://script.google.com/macros/s/AKfycbxY4GaFytkzx0bfXzIBJqhI-gMYVeRgoC-wxNG73UiXcAeUrjnxIMdzAidnTQ5nMGua/exec",
                 data: {
                     mission: mission,
                     letter: text
@@ -47,14 +101,48 @@
                 type: "POST",
                 dataType: 'text',
                 success: function (result) {
-                    ShowOn(result);
+                    if(mission=="Get"){ShowOn(result);}
+                    else{window.location.href = 'https://dkai666.github.io/chu.html';}
                 }
             });
         }
         function ShowOn(result) {
-            letter=result.split(',')
-            document.querySelector(".BabyForMe").innerText=letter[2];
+            let dkArea = document.querySelector('.dkArea');
+            let chuArea = document.querySelector('.chuArea');
+            dkArea.innerHTML = '';
+            chuArea.innerHTML = '';
+            let dkLi = dkArea.getElementsByTagName('li');
+            let chuLi = chuArea.getElementsByTagName('li');
+            resultArray = result.split(',');
+            let letterValue
+            for (i = 0; i < resultArray.length / 5; i++) {
+                for (j = 0; j < 5; j++) {
+
+                    if (j < 2 && resultArray[5 * i + j].length > 0) {
+                        letterValue = document.createElement('li');
+                        if (j % 2 == 1) { letterValue.innerHTML = `[${resultArray[5 * i + j]}]`; }
+                        else { letterValue.innerHTML = resultArray[5 * i + j]; }
+                        if (dkLi.length > 0) { dkArea.insertBefore(letterValue, dkLi[0]); }
+                        else {
+                            dkArea.appendChild(letterValue);
+                            dkLi = dkArea.getElementsByTagName('li');
+                        }
+                    }
+
+                    else if (j >= 2 && j < 4 && resultArray[5 * i + j].length > 0) {
+                        letterValue = document.createElement('li');
+                        if (j % 2 == 1) { letterValue.innerHTML = `[${resultArray[5 * i + j]}]`; }
+                        else { letterValue.innerHTML = resultArray[5 * i + j]; }
+                        if (chuLi.length > 0) { chuArea.insertBefore(letterValue, chuLi[0]); }
+                        else {
+                            chuArea.appendChild(letterValue);
+                            chuLi = chuArea.getElementsByTagName('li');
+                        }
+                    }
+                }
+            }
         }
+            // document.querySelector('.chuArea').scrollTop = document.querySelector('.chuArea').scrollHeight
     </script>
 </body>
 
