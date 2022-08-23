@@ -24,9 +24,13 @@
             list-style-type: none;
             margin-top: 5px;
         }
-        input{width: 30%;}
-        .address{
-            width: 89%;
+
+        input {
+            width: 25%;
+        }
+
+        .address {
+            width: 75%;
         }
     </style>
 </head>
@@ -34,7 +38,8 @@
 <body>
     姓名:<input type="search" class="searchName" placeholder="請輸入姓名" value="">
     <input class="age" placeholder="年齡" value="">
-    <input class="birthday" placeholder="生日" value="">
+    <input type="date" class="birthday" placeholder="生日" value="">
+    <br>
     <input class="address" placeholder="地址" value="">
     <button onclick="addToJoin()">加入</button>
 
@@ -106,7 +111,8 @@
         function PickOne(e) {
             $('.searchName').val(e[0]);
             $('.age').val(e[1]);
-            $('.birthday').val(e[2]);
+            const [year, month, day] = e[2].split('/');
+            $('.birthday').val(`${parseInt(year) + 1911}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
             $('.address').val(e[3]);
             $(`.name li`).css("display", "none");
         }
@@ -118,7 +124,10 @@
                 $(`.name li`).css("display", "none");
                 temp.push($('.searchName').val());
                 temp.push($('.age').val());
-                temp.push($('.birthday').val());
+                let year = parseInt($('.birthday').val().split('-')[0]) - 1911;
+                let month = parseInt($('.birthday').val().split('-')[1]);
+                let day = parseInt($('.birthday').val().split('-')[2]);
+                temp.push(`${year}/${month}/${day}`);
                 temp.push($('.address').val());
                 Tempstr = temp.toString().replace(/,/g, '-');
                 JoinMembers.push(Tempstr);
