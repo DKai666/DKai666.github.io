@@ -62,7 +62,7 @@
     </table>
 
     <script>
-        var GAS_API = "https://script.google.com/macros/s/AKfycbwuDEN7aKstrbYWAmK7mq62JMMAFXe5xdbCGCpDGDe5HUuN7r48ExGqgSO5T_oVWp1c/exec";
+        var GAS_API = "https://script.google.com/macros/s/AKfycbxi5PFvQJzae4V-nerjXVuayrxNnlJ3pv7-Ku6hku0J8OFpipw73VCTRxB-hfeU4JLQ9w/exec";
         var MembersInfo = [];
         var AllMembers = [];
         var JoinMembers = [];
@@ -179,6 +179,7 @@
             member = tempresult.toString();
             member = member.replace(/,/g, '|');
             member = member.replace(/-/g, ',');
+            console.log(member);
 
             $.ajax({
                 type: "POST",
@@ -198,7 +199,7 @@
                 dataType: 'text',
                 url: GAS_API,
                 data: {
-                    mission: 'MakeExcel',
+                    mission: 'LightingMakeExcel',
                     members: member
                 },
                 success: function (result) {
