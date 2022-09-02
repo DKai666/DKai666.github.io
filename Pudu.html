@@ -96,7 +96,7 @@
     </div>
 
     <script>
-        var GAS_API = "https://script.google.com/macros/s/AKfycbzKHPvlMJZ8ropC6SRbAOSZQRHSGUEE20EuBjPH6r4f146CZssZwLzgO2K8biClFH1wvA/exec";
+        var GAS_API = "https://script.google.com/macros/s/AKfycbxPLcZ6D97nQtAOuDMVluwuymBFheUxUCXf0jtrpQkhwuw7jcIJN6bhGuTPwF7g-V3DdQ/exec";
         var MembersInfo = [];
         var AllMembers = [];
         var JoinMembers = [];
@@ -232,7 +232,7 @@
                     members: member
                 },
                 success: function (result) {
-                    GetShortUrl(result.split('|')[1]);
+                    console.log(result);
                 }
             });
             var cyclicalYear = document.querySelector('.cyclicalYear').innerText.split(" ")[0];
@@ -250,12 +250,12 @@
                     day: day
                 },
                 success: function (result) {
+                    GetShortUrl(result);
                 },
                 complete: function () {
                     //再次隱藏//可利用setTimeout 讓loading效果明顯
                     // $('#loading').css("display", "none");
                     setTimeout(function () { $('#loading').css("display", "none"); }, 2000);
-                    alert("已複製連結！");
                 }
             });
         }
