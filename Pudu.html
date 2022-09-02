@@ -39,6 +39,10 @@
             width: 50px;
         }
 
+        .searchName {
+            width: 75%;
+        }
+
         div.loadingdiv {
             height: 100%;
             width: 100%;
@@ -74,14 +78,14 @@
     <table class="table">
         <thead>
             <tr class="table-primary">
+                <td><button onclick="MakeExcel()">製作檔案</button></td>
+                <td class="PrintLink"></td>
                 <td>
                     <p><strong class="cyclicalYear"></strong></p>
                     <strong>普渡日期:</strong><input type="number" class="year" placeholder="民國年" value="">年
                     <input type="number" class="month" placeholder="月" value="">月
                     <input type="number" class="day" placeholder="日" value="">日
                 </td>
-                <td><button onclick="MakeExcel()">製作檔案</button></td>
-                <td class="PrintLink"></td>
             </tr>
             <tr class="table-danger">
                 <td><strong>姓名</strong></td>
