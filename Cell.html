@@ -67,9 +67,16 @@
 
 <body>
     <input type="search" class="searchName" placeholder="請輸入姓名" value="">
-    <input type="checkbox" class="light1">燈1
-    <input type="checkbox" class="light2">燈2
-    <input type="checkbox" class="light3">燈3
+    <input type="checkbox" class="light1 btn-check" id="btn-check-2-outlined1">
+    <label class="btn btn-outline-warning" for="btn-check-2-outlined1">安太歲</label>
+
+
+    <input type="checkbox" class="light2 btn-check" id="btn-check-2-outlined2">
+    <label class="btn btn-outline-warning" for="btn-check-2-outlined2">光明燈</label>
+
+
+    <input type="checkbox" class="light3 btn-check" id="btn-check-2-outlined3">
+    <label class="btn btn-outline-warning" for="btn-check-2-outlined3">財利燈</label>
     <button onclick="addToJoin()">加入</button>
     <ul class="name"></ul>
     <table class="table">
@@ -80,9 +87,9 @@
             </tr>
             <tr class="table-danger">
                 <td><strong>姓名</strong></td>
-                <td><strong>燈1</strong></td>
-                <td><strong>燈2</strong></td>
-                <td><strong>燈3</strong></td>
+                <td><strong>安太歲</strong></td>
+                <td><strong>光明燈</strong></td>
+                <td><strong>財利燈</strong></td>
             </tr>
         </thead>
         <tbody class="ListTbody"></tbody>
@@ -93,7 +100,7 @@
     </div>
 
     <script>
-        var GAS_API = "https://script.google.com/macros/s/AKfycbwFV0CKltMXP1RmiKzagHQN0D-OTYemOArAHo_UA5I2vnp0I9rthBkFUHcVEBo3LuQhJw/exec";
+        var GAS_API = "https://script.google.com/macros/s/AKfycbyqVQJrby2Jrds573K9uLdbuut2FHTNMnQkN55DJBCozEjZnejZ-YfPParO1VysFClHRg/exec";
         var MembersInfo = [];
         var AllMembers = [];
         var JoinMembers = [];
