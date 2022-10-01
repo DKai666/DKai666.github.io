@@ -142,8 +142,8 @@
         var MembersInfo = [];
         var AllMembers = [];
         var JoinMembers = [];
+        var LoadingGif = ["1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif", "11.gif", "12.gif"];
         window.onload = function () {
-            var LoadingGif = ["1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif", "11.gif", "12.gif"];
             $.ajax({
                 beforeSend: function () {
                     //將div顯示
@@ -176,6 +176,7 @@
                 complete: function () {
                     //再次隱藏//可利用setTimeout 讓loading效果明顯
                     $('#loading').css("display", "none");
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 2000);
                 }
             });
             document.querySelector('.searchName').addEventListener('input', function (e) {
