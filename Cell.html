@@ -59,47 +59,61 @@
             vertical-align: middle;
             text-align: center;
             margin: 0 auto;
-            margin-top: 25vh;
-            width: 100%;
+            margin-top: -100px;
+            width: 85%;
         }
+
         label {
             padding: 0;
             margin-right: 3px;
             cursor: pointer;
         }
+
         input[type=checkbox] {
             display: none;
         }
+
         input[type=checkbox]+span {
             display: inline-block;
             background-color: #aaa;
             padding: 3px 6px;
             border: 1px solid gray;
             color: #444;
-            user-select: none; /* 防止文字被滑鼠選取反白 */
+            user-select: none;
+            /* 防止文字被滑鼠選取反白 */
         }
 
         input[type=checkbox]:checked+span {
             color: LemonChiffon;
             background-color: Gold;
         }
+
+        .searchName {
+            border: solid;
+            border-width: thin;
+            font-size: 30px;
+        }
+
+        button {
+            font-size: 20px;
+        }
     </style>
 </head>
 
 <body>
-    <input type="search" class="searchName" placeholder="請輸入姓名" value="">
-    
+    <input type="search" class="searchName" placeholder="姓名" value="">
+
     <label>
         <input type="checkbox" class="light1" value="安太歲" />
-        <span>安太歲</span>
+        <span style="font-size: 20px;">安太歲</span>
     </label>
     <label>
         <input type="checkbox" class="light2" value="光明燈" />
-        <span>光明燈</span>
+        <span style="font-size: 20px;">光明燈</span>
     </label>
     <label>
         <input type="checkbox" class="light3" value="財利燈" />
-        <span>財利燈</span>
+        <span style="font-size: 20px;">財利燈</span>
     </label>
     <button onclick="addToJoin()">加入</button>
     <ul class="name"></ul>
@@ -120,7 +134,7 @@
     </table>
 
     <div class="loadingdiv" id="loading" style="display: none">
-        <img src="loading.gif" />
+        <img id="Gif" src="1.gif" />
     </div>
 
     <script>
@@ -129,9 +143,11 @@
         var AllMembers = [];
         var JoinMembers = [];
         window.onload = function () {
+            var LoadingGif = ["1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif", "11.gif", "12.gif"];
             $.ajax({
                 beforeSend: function () {
                     //將div顯示
+                    $('#Gif').attr('src', LoadingGif[Math.floor(Math.random() * 11)]);
                     $('#loading').css("display", "");
                 },
                 type: "POST",
@@ -152,7 +168,7 @@
                         AllMembers.push(result[4 * i]);
                     }
                     AllMembers.forEach(function (e, index) {
-                        $(".name").append(`<li id=li${index}>${e}</li>`);
+                        $(".name").append(`<li style="font-size: 20px;" id=li${index}>${e}</li>`);
                         $(`#li${index}`).css("display", "none");
                         $(`#li${index}`).on('click', function () { PickOne(e); });
                     })
@@ -160,7 +176,7 @@
                 complete: function () {
                     //再次隱藏//可利用setTimeout 讓loading效果明顯
                     $('#loading').css("display", "none");
-                    // setTimeout(function () { $('#loading').css("display", "none"); }, 3000);
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 3000);
                 }
             });
             document.querySelector('.searchName').addEventListener('input', function (e) {
@@ -250,6 +266,7 @@
             $.ajax({
                 beforeSend: function () {
                     //將div顯示
+                    $('#Gif').attr('src', LoadingGif[Math.floor(Math.random() * 11)]);
                     $('#loading').css("display", "");
                 },
                 headers: {
@@ -268,7 +285,7 @@
                 complete: function () {
                     //再次隱藏//可利用setTimeout 讓loading效果明顯
                     // $('#loading').css("display", "none");
-                    setTimeout(function () { $('#loading').css("display", "none"); }, 2000);
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 4000);
                     alert("製作完成！");
                 }
             });

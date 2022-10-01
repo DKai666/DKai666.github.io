@@ -27,6 +27,7 @@
 
         input {
             width: 25%;
+            font-size: 30px;
         }
 
         .address {
@@ -36,11 +37,13 @@
         .year,
         .month,
         .day {
-            width: 50px;
+            width: 80px;
         }
 
         .searchName {
             width: 75%;
+            border: solid;
+            border-width: thin;
         }
 
         div.loadingdiv {
@@ -63,14 +66,18 @@
             vertical-align: middle;
             text-align: center;
             margin: 0 auto;
-            margin-top: 25vh;
-            width: 100%;
+            margin-top: -100px;
+            width: 85%;
+        }
+
+        button {
+            font-size: 20px;
         }
     </style>
 </head>
 
 <body>
-    <input type="search" class="searchName" placeholder="請輸入姓名" value="">
+    <input type="search" class="searchName" placeholder="姓名" value="">
     <br>
     <input class="address" placeholder="地址" value="">
     <button onclick="addToJoin()">加入</button>
@@ -82,21 +89,24 @@
                 <td class="PrintLink"></td>
                 <td>
                     <p><strong class="cyclicalYear"></strong></p>
-                    <strong>普渡日期:</strong><input type="number" class="year" placeholder="民國年" value="">年
-                    <input type="number" class="month" placeholder="月" value="">月
-                    <input type="number" class="day" placeholder="日" value="">日
+                    <strong style="font-size: 20px;">普渡日期:</strong><input type="number" class="year" placeholder="民國"
+                        value=""><strong style="font-size: 20px;">年</strong>
+                    <input type="number" class="month" placeholder="月" value=""><strong
+                        style="font-size: 20px;">月</strong>
+                    <input type="number" class="day" placeholder="日" value=""><strong
+                        style="font-size: 20px;">日</strong>
                 </td>
             </tr>
             <tr class="table-danger">
-                <td><strong>姓名</strong></td>
-                <td><strong>地址</strong></td>
+                <td><strong style="font-size: 20px;">姓名</strong></td>
+                <td><strong style="font-size: 20px;">地址</strong></td>
             </tr>
         </thead>
         <tbody class="ListTbody"></tbody>
     </table>
 
     <div class="loadingdiv" id="loading" style="display: none">
-        <img src="loading.gif" />
+        <img id="Gif" src="1.gif" />
     </div>
 
     <script>
@@ -105,6 +115,7 @@
         var AllMembers = [];
         var JoinMembers = [];
         window.onload = function () {
+            var LoadingGif = ["1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif", "11.gif", "12.gif"];
             $(".year").on("keypress keyup change", function (event) {
                 if ($(this).val() < 1) { $(this).val(""); document.querySelector('.cyclicalYear').innerText = "" } else {
                     document.querySelector('.cyclicalYear').innerText = `${cyclical(parseInt($(this).val()) + parseInt(1911))} 年`;
@@ -119,6 +130,7 @@
             $.ajax({
                 beforeSend: function () {
                     //將div顯示
+                    $('#Gif').attr('src', LoadingGif[Math.floor(Math.random() * 11)]);
                     $('#loading').css("display", "");
                 },
                 type: "POST",
@@ -139,7 +151,7 @@
                         AllMembers.push(result[4 * i]);
                     }
                     MembersInfo.forEach(function (e, index) {
-                        $(".name").append(`<li id=li${index}>${e}</li>`);
+                        $(".name").append(`<li style="font-size: 20px;" id=li${index}>${e}</li>`);
                         $(`#li${index}`).css("display", "none");
                         $(`#li${index}`).on('click', function () { PickOne(e); });
                     })
@@ -147,7 +159,7 @@
                 complete: function () {
                     //再次隱藏//可利用setTimeout 讓loading效果明顯
                     $('#loading').css("display", "none");
-                    // setTimeout(function () { $('#loading').css("display", "none"); }, 3000);
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 3000);
                 }
             });
             document.querySelector('.searchName').addEventListener('input', function (e) {
@@ -226,6 +238,7 @@
             $.ajax({
                 beforeSend: function () {
                     //將div顯示
+                    $('#Gif').attr('src', LoadingGif[Math.floor(Math.random() * 11)]);
                     $('#loading').css("display", "");
                 },
                 type: "POST",
@@ -259,7 +272,7 @@
                 complete: function () {
                     //再次隱藏//可利用setTimeout 讓loading效果明顯
                     // $('#loading').css("display", "none");
-                    setTimeout(function () { $('#loading').css("display", "none"); }, 2000);
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 4000);
                     alert("製作完成！");
                 }
             });
