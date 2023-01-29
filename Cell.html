@@ -138,7 +138,7 @@
     </div>
 
     <script>
-        var GAS_API = "https://script.google.com/macros/s/AKfycbyqVQJrby2Jrds573K9uLdbuut2FHTNMnQkN55DJBCozEjZnejZ-YfPParO1VysFClHRg/exec";
+        var GAS_API = "https://script.google.com/macros/s/AKfycbwmyntlY-P2vDyfeLmYzVLKh-NSwlY1iVLReBVpckmLDOKUKk1LIBlnEJDfsz9Sr6uZWw/exec";
         var MembersInfo = [];
         var AllMembers = [];
         var JoinMembers = [];
@@ -162,7 +162,7 @@
                     for (i = 0; i < result.length / 4; i++) {
                         item = [];
                         for (j = 0; j < 4; j++) {
-                            item.push(result[(4 * i) + j]);
+                            item.push(result[(4 * i) + j]+" "+result[(4 * i) + j+1]+"歲");
                         }
                         MembersInfo.push(item);
                         AllMembers.push(result[4 * i]);
