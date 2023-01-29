@@ -165,7 +165,7 @@
                             item.push(result[(4 * i) + j]);
                         }
                         MembersInfo.push(item);
-                        AllMembers.push(result[4 * i]+" "+result[(4 * i)+1]+"歲");
+                        AllMembers.push(" "+result[4 * i]+" "+result[(4 * i)+1]+"歲");
                     }
                     AllMembers.forEach(function (e, index) {
                         $(".name").append(`<li style="font-size: 20px;" id=li${index}>${e}</li>`);
