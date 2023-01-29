@@ -162,10 +162,10 @@
                     for (i = 0; i < result.length / 4; i++) {
                         item = [];
                         for (j = 0; j < 4; j++) {
-                            item.push(result[(4 * i) + j]+" "+result[(4 * i) + j+1]+"歲");
+                            item.push(result[(4 * i) + j]);
                         }
                         MembersInfo.push(item);
-                        AllMembers.push(result[4 * i]);
+                        AllMembers.push(result[4 * i]+" "+result[(4 * i)+1]+"歲");
                     }
                     AllMembers.forEach(function (e, index) {
                         $(".name").append(`<li style="font-size: 20px;" id=li${index}>${e}</li>`);
