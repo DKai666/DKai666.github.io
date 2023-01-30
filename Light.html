@@ -72,6 +72,37 @@
         button {
             font-size: 20px;
         }
+
+        .light1,
+        .light2,
+        .light3 {
+            width: 50px;
+        }
+
+        label {
+            padding: 0;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        input[type=checkbox] {
+            display: none;
+        }
+
+        input[type=checkbox]+span {
+            display: inline-block;
+            background-color: #aaa;
+            padding: 3px 6px;
+            border: 1px solid gray;
+            color: #444;
+            user-select: none;
+            /* 防止文字被滑鼠選取反白 */
+        }
+
+        input[type=checkbox]:checked+span {
+            color: LemonChiffon;
+            background-color: Gold;
+        }
     </style>
 </head>
 
@@ -83,16 +114,32 @@
     <input type="number" class="day" placeholder="日" value=""><strong style="font-size: 20px;">日</strong>
     <br>
     <input class="address" placeholder="地址" value="">
+    <br>
+    <label>
+        <input type="checkbox" class="light1" value="安太歲" />
+        <span style="font-size: 20px;">安太歲</span>
+    </label>
+    <label>
+        <input type="checkbox" class="light2" value="光明燈" />
+        <span style="font-size: 20px;">光明燈</span>
+    </label>
+    <label>
+        <input type="checkbox" class="light3" value="財利燈" />
+        <span style="font-size: 20px;">財利燈</span>
+    </label>
     <button onclick="addToJoin()">加入</button>
     <ul class="name"></ul>
     <table class="table">
         <thead>
             <tr class="table-primary">
-                <td><button onclick="MakeExcel()">製作檔案</button></td>
                 <td colspan="3" class="PrintLink"></td>
+                <td><button onclick="MakeExcel()">製作檔案</button></td>
             </tr>
             <tr class="table-danger">
                 <td><strong style="font-size: 20px;">姓名</strong></td>
+                <td style="width: 90px;"><strong style="font-size: 20px;">安太歲</strong></td>
+                <td style="width: 90px;"><strong style="font-size: 20px;">光明燈</strong></td>
+                <td style="width: 120px;"><strong style="font-size: 20px;">財利燈</strong></td>
                 <td><strong style="font-size: 20px;">年齡</strong></td>
                 <td><strong style="font-size: 20px;">生日</strong></td>
                 <td><strong style="font-size: 20px;">地址</strong></td>
@@ -187,6 +234,9 @@
                 let Tempstr = "";
                 $(`.name li`).css("display", "none");
                 temp.push($('.searchName').val());
+                if (document.querySelector('.light1').checked) { temp.push(1); } else { temp.push(0); }
+                if (document.querySelector('.light2').checked) { temp.push(1); } else { temp.push(0); }
+                if (document.querySelector('.light3').checked) { temp.push(1); } else { temp.push(0); }
                 temp.push($('.age').val());
                 if ($('.year').val() != "" && $('.month').val() != "" && $('.day').val() != "") {
                     let year = parseInt($('.year').val());
@@ -203,6 +253,9 @@
                 $('.month').val("");
                 $('.day').val("");
                 $('.address').val("");
+                document.querySelector('.light1').checked = false;
+                document.querySelector('.light2').checked = false;
+                document.querySelector('.light3').checked = false;
                 FreshList();
             }
         }
@@ -218,16 +271,25 @@
 
         function FreshList() {
             let tableDom = '';
+            let light1 = "";
+            let light2 = "";
+            let light3 = "";
             for (i = 0; i < JoinMembers.length; i++) {
+                if (parseInt(JoinMembers[i].split('-')[1]) == 1) { light1 = "✔"; } else { light1 = ""; }
+                if (parseInt(JoinMembers[i].split('-')[2]) == 1) { light2 = "✔"; } else { light2 = ""; }
+                if (parseInt(JoinMembers[i].split('-')[3]) == 1) { light3 = "✔"; } else { light3 = ""; }
                 name = JoinMembers[i].split('-')[0];
                 if (i % 2 === 0) {
                     tableDom = tableDom + `<tr class="table-warning">`;
                 }
                 else { tableDom = tableDom + `<tr class="table-info">`; }
                 tableDom = tableDom + `<td>${JoinMembers[i].split('-')[0]}</td>`;
-                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[1]}</td>`;
-                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[2]}</td>`;
-                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[3]}</td>`;
+                tableDom = tableDom + `<td>${light1}</td>`;
+                tableDom = tableDom + `<td>${light2}</td>`;
+                tableDom = tableDom + `<td>${light3}</td>`;
+                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[4]}</td>`;
+                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[5]}</td>`;
+                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[6]}</td>`;
                 tableDom = tableDom + `<td><button id=${name}>X</button></td>`;
                 tableDom = tableDom + "</tr>";
             }
@@ -241,13 +303,11 @@
         function MakeExcel() {
             if (JoinMembers.length < 1) { alert("請加入參加人員"); return; }
             var member = "";
-            var tempresult = [];
-            JoinMembers.forEach(function (e, index) {
-                tempresult.push(e);
-            })
-            member = tempresult.toString();
+            debugger;
+            member = JoinMembers.toString();
             member = member.replace(/,/g, '|');
             member = member.replace(/-/g, ',');
+            debugger;
             $.ajax({
                 beforeSend: function () {
                     //將div顯示
@@ -270,7 +330,7 @@
                 dataType: 'text',
                 url: GAS_API,
                 data: {
-                    mission: 'LightingMakeExcel',
+                    mission: 'MakingMembersExcel',
                     members: member
                 },
                 success: function (result) {

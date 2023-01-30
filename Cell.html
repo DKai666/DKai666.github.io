@@ -33,12 +33,6 @@
             width: 75%;
         }
 
-        .light1,
-        .light2,
-        .light3 {
-            width: 50px;
-        }
-
         div.loadingdiv {
             height: 100%;
             width: 100%;
@@ -61,6 +55,12 @@
             margin: 0 auto;
             margin-top: -100px;
             width: 75%;
+        }
+
+        .light1,
+        .light2,
+        .light3 {
+            width: 50px;
         }
 
         label {
@@ -263,6 +263,7 @@
             member = member.replace(/,/g, '|');
             member = member.replace(/-/g, ',');
             console.log(member);
+            debugger;
             $.ajax({
                 beforeSend: function () {
                     //將div顯示
