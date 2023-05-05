@@ -44,22 +44,16 @@
             font-size: small;
             font-style: italic;
         }
+
         ul li:nth-child(2n) {
             font-style: normal;
             font-size: medium;
         }
 
-        /* .dkArea li {
-            color: rgb(98, 62, 255);
-        } */
-
-        /* .chuArea li {
-            color: rgb(252, 77, 173);
-        } */
-
         ::-webkit-scrollbar {
             display: none;
         }
+
         .block {
             position: absolute;
             width: 100%;
@@ -75,9 +69,6 @@
 
 <body>
     <h1 class="LoveDate" style="color: rgb(255, 198, 208)"></h1>
-    <h1 class="WaitDate" style="color: rgb(201, 196, 150)"></h1>
-    <!-- <h3 class="ForBaby" style="color: rgba(65, 68, 247, 0.527)">Love You Baby</h3>
-    <h3 class="BabyForMe" style="color: rgba(241, 82, 255, 0.527)"></h3> -->
     <textarea></textarea>
     <button onclick="WriteLetter('Write')">送出</button>
     <div class="Area">
@@ -93,15 +84,12 @@
             let startDate = new Date("11/14/2021");
             let Howlong = Math.abs(todayDate - startDate);
             document.querySelector(".LoveDate").innerHTML = `Love you ${Howlong / (1000 * 3600 * 24) + 1}th Day`;
-            let Deadline = new Date("04/17/2024");
-            let WaitDay = Math.abs(todayDate - Deadline);
-            document.querySelector(".WaitDate").innerHTML = `Wait me for ${WaitDay / (1000 * 3600 * 24) + 1} Days`;
-            WriteLetter("Get");
+            WriteLetter("GetAllInfo");
         }
         function WriteLetter(mission) {
             let text = document.querySelector("textarea").value;
             $.ajax({
-                url: "https://script.google.com/macros/s/AKfycbw4ljmeYWeNVvs_tMRLjnfv68e9DiY4adfUG8RtosuaMpaJ6KBMVKKcLQYdVw57kMth/exec",
+                url: "https://script.google.com/macros/s/AKfycbx1JCE8ijQjh5dCPdcV7pnucbroY14IKswqXQHkYSW4ClhJz4WDvRL7dJDdflpnPoS1/exec",
                 data: {
                     mission: mission,
                     letter: text
@@ -109,8 +97,8 @@
                 type: "POST",
                 dataType: 'text',
                 success: function (result) {
-                    if(mission=="Get"){ShowOn(result);}
-                    else{window.location.href = 'https://dkai666.github.io/chu.html';}
+                    if (mission == "GetAllInfo") { ShowOn(result); }
+                    else { window.location.href = 'https://dkai666.github.io/chu.html'; }
                 }
             });
         }
@@ -125,7 +113,6 @@
             let letterValue
             for (i = 0; i < resultArray.length / 5; i++) {
                 for (j = 0; j < 5; j++) {
-
                     if (j < 2 && resultArray[5 * i + j].length > 0) {
                         letterValue = document.createElement('li');
                         if (j % 2 == 1) { letterValue.innerHTML = `[${resultArray[5 * i + j]}]`; }
@@ -136,7 +123,6 @@
                             dkLi = dkArea.getElementsByTagName('li');
                         }
                     }
-
                     else if (j >= 2 && j < 4 && resultArray[5 * i + j].length > 0) {
                         letterValue = document.createElement('li');
                         if (j % 2 == 1) { letterValue.innerHTML = `[${resultArray[5 * i + j]}]`; }
@@ -150,7 +136,6 @@
                 }
             }
         }
-            // document.querySelector('.chuArea').scrollTop = document.querySelector('.chuArea').scrollHeight
     </script>
 </body>
 
