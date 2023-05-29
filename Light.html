@@ -153,7 +153,7 @@
     </div>
 
     <script>
-        var GAS_API = "https://script.google.com/macros/s/AKfycbybtH9RWdxgLFqy3S6Xav0CvYOOxOfmUsZ1XBR3sYpX9K13uKXXtH_SluGQgwUTXs29Aw/exec";
+        var GAS_API = "https://script.google.com/macros/s/AKfycbxk6-1QTpM1b6qOXfvsgySKPPKM7KTp-KYSxJpr_YDDSVkuMTWRhXWaExHfqVViBCGMEA/exec";
         var MembersInfo = [];
         var AllMembers = [];
         var JoinMembers = [];
@@ -303,11 +303,9 @@
         function MakeExcel() {
             if (JoinMembers.length < 1) { alert("請加入參加人員"); return; }
             var member = "";
-            debugger;
             member = JoinMembers.toString();
             member = member.replace(/,/g, '|');
             member = member.replace(/-/g, ',');
-            debugger;
             $.ajax({
                 beforeSend: function () {
                     //將div顯示
@@ -322,7 +320,7 @@
                     members: member
                 },
                 success: function (result) {
-                    console.log(result);
+                    // console.log(result);
                 }
             });
             $.ajax({
@@ -334,31 +332,15 @@
                     members: member
                 },
                 success: function (result) {
-                    GetShortUrl(result);
+                    $('.PrintLink').html(`<a href="https://docs.google.com/spreadsheets/d/11wo6gQQ2Ba0yLBfC6_zS_EwrMfBFFsVDYUm4SuNKqu8">查看結果</a>`);
                 },
                 complete: function () {
                     //再次隱藏//可利用setTimeout 讓loading效果明顯
                     // $('#loading').css("display", "none");
-                    setTimeout(function () { $('#loading').css("display", "none"); }, 4000);
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 100);
                     alert("製作完成！");
                 }
             });
-        }
-
-        function GetShortUrl(ExcelID) {
-            let url = "https://api.reurl.cc/shorten";
-            let xhr = new XMLHttpRequest();
-            xhr.open("POST", url);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.setRequestHeader("reurl-api-key", "4070ff49d794e13719503b663c974755ecd0b034999a04df8a38b58d65165567c4f5d6");
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    $('.PrintLink').html(`<a href="${JSON.parse(xhr.responseText).short_url}">${JSON.parse(xhr.responseText).short_url}</a>`);
-                    copyInput(`${JSON.parse(xhr.responseText).short_url}`);
-                }
-            };
-            var data = `{ "url" : "https://docs.google.com/spreadsheets/d/${ExcelID}"}`;
-            xhr.send(data);
         }
 
         function copyInput(copyString) {
