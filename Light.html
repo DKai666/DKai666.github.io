@@ -153,157 +153,208 @@
     </div>
 
     <script>
-    const GAS_API = "https://script.google.com/macros/s/AKfycbxFdoloWU5kKgx9UNXUhG5gd8XXwuPctDv0KnUa_iH4AfLk4ROalW_jasdYIkqjrrxzEg/exec";
-    let MembersInfo = [];
-    let JoinMembers = [];
-    const LoadingGif = ["1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif", "11.gif", "12.gif"];
-
-    $(document).ready(function () {
-        initializePage();
-    });
-
-    function initializePage() {
-        setupDateInputRestrictions();
-        fetchDataFromGAS();
-        setupSearchListener();
-    }
-
-    function setupDateInputRestrictions() {
-        $(".year, .month, .day").on("change keyup", function () {
-            const val = $(this).val();
-            if ((this.className === "year" && val < 1) || 
-                (this.className === "month" && (val < 1 || val > 12)) || 
-                (this.className === "day" && (val < 1 || val > 31))) {
-                $(this).val("");
-            }
-        });
-    }
-
-    function fetchDataFromGAS() {
-        showLoading(true);
-        $.post(GAS_API, { mission: 'GetAllMembers', members: "" })
-            .done(processMembersData)
-            .always(() => showLoading(false));
-    }
-
-    function processMembersData(result) {
-        const results = result.split(',');
-        MembersInfo = [];
-        for (let i = 0; i < results.length; i += 4) {
-            const member = results.slice(i, i + 4);
-            MembersInfo.push(member);
-            appendMemberToList(member, i / 4);
-        }
-    }
-
-    function appendMemberToList(member, index) {
-        const $li = $(`<li style="font-size: 20px;" id="li${index}">${member.join(' - ')}</li>`);
-        $li.hide().on('click', () => pickOne(member)).appendTo(".name");
-    }
-
-    function setupSearchListener() {
-        $('.searchName').on('input', function () {
-            const searchValue = $(this).val().toLowerCase();
-            $(".name li").each(function (index) {
-                const isVisible = MembersInfo[index][0].toLowerCase().includes(searchValue);
-                $(this).toggle(isVisible);
+        var GAS_API = "https://script.google.com/macros/s/AKfycbwyraNdtg39PWH58T3wL2Ga7QBIecKnrF6l1NbItaLw0Motuo0dtX_zSXeL0-xdqZiUYg/exec";
+        var MembersInfo = [];
+        var AllMembers = [];
+        var JoinMembers = [];
+        var LoadingGif = ["1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif", "11.gif", "12.gif"];
+        window.onload = function () {
+            $(".year").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1) { $(this).val(""); }
             });
-        });
-    }
-
-    function pickOne(member) {
-        $('.searchName').val(member[0]);
-        $('.age').val(member[1]);
-        if (member[2]) {
-            const [year, month, day] = member[2].split('/');
-            $('.year').val(year).change();
-            $('.month').val(month).change();
-            $('.day').val(day).change();
+            $(".month").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 12) { $(this).val(""); }
+            });
+            $(".day").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 31) { $(this).val(""); }
+            });
+            $.ajax({
+                beforeSend: function () {
+                    //將div顯示
+                    $('#Gif').attr('src', LoadingGif[Math.floor(Math.random() * 11)]);
+                    $('#loading').css("display", "");
+                },
+                type: "POST",
+                dataType: 'text',
+                url: GAS_API,
+                data: {
+                    mission: 'GetAllMembers',
+                    members: ""
+                },
+                success: function (result) {
+                    result = result.split(',');
+                    for (i = 0; i < result.length / 4; i++) {
+                        item = [];
+                        for (j = 0; j < 4; j++) {
+                            item.push(result[(4 * i) + j]);
+                        }
+                        MembersInfo.push(item);
+                        AllMembers.push(result[4 * i]);
+                    }
+                    MembersInfo.forEach(function (e, index) {
+                        $(".name").append(`<li style="font-size: 20px;" id=li${index}>${e}</li>`);
+                        $(`#li${index}`).css("display", "none");
+                        $(`#li${index}`).on('click', function () { PickOne(e); });
+                    })
+                },
+                complete: function () {
+                    //再次隱藏//可利用setTimeout 讓loading效果明顯
+                    $('#loading').css("display", "none");
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 2000);
+                }
+            });
+            document.querySelector('.searchName').addEventListener('input', function (e) {
+                tempWord = e.target.value;
+                try {
+                    AllMembers.forEach(function (e, index) {
+                        if (e.includes(tempWord)) { $(`#li${index}`).css("display", ""); }
+                        else { $(`#li${index}`).css("display", "none"); }
+                    })
+                } catch { }
+                if (tempWord == "") { $(`.name li`).css("display", "none"); }
+            })
         }
-        $('.address').val(member[3]);
-        $(".name li").hide();
-    }
 
-    function addToJoin() {
-        const name = $('.searchName').val();
-        if (name) {
-            const member = {
-                name: name,
-                light1: $('.light1').is(':checked') ? 1 : 0,
-                light2: $('.light2').is(':checked') ? 1 : 0,
-                light3: $('.light3').is(':checked') ? 1 : 0,
-                age: $('.age').val(),
-                birthDate: `${$('.year').val()}/${$('.month').val()}/${$('.day').val()}`,
-                address: $('.address').val()
-            };
-            JoinMembers.push(member);
-            clearForm();
-            refreshList();
+        function PickOne(e) {
+            $('.searchName').val(e[0]);
+            if (e[1] != "") { $('.age').val(e[1]); }
+            if (e[2] != "") {
+                const [year, month, day] = e[2].split('/');
+                $('.year').val(parseInt(year));
+                $('.month').val(parseInt(month));
+                $('.day').val(parseInt(day));
+            }
+            $('.address').val(e[3]);
+            $(`.name li`).css("display", "none");
         }
-    }
 
-    function clearForm() {
-        $('.searchName, .age, .year, .month, .day, .address').val('');
-        $('.light1, .light2, .light3').prop('checked', false);
-    }
-
-    function refreshList() {
-        const $tbody = $('.ListTbody').empty();
-        JoinMembers.forEach((member, index) => {
-            const $tr = $(`<tr class="${index % 2 === 0 ? 'table-warning' : 'table-info'}">
-                <td>${member.name}</td>
-                <td>${member.light1 ? '✔' : ''}</td>
-                <td>${member.light2 ? '✔' : ''}</td>
-                <td>${member.light3 ? '✔' : ''}</td>
-                <td>${member.age}</td>
-                <td>${member.birthDate}</td>
-                <td>${member.address}</td>
-                <td><button onclick="removeJoin(${index})">X</button></td>
-            </tr>`).appendTo($tbody);
-        });
-    }
-
-    function removeJoin(index) {
-        JoinMembers.splice(index, 1);
-        refreshList();
-    }
-
-    function showLoading(show) {
-        const gifIndex = Math.floor(Math.random() * LoadingGif.length);
-        $('#Gif').attr('src', LoadingGif[gifIndex]);
-        $('#loading').toggle(show);
-    }
-
-    function MakeExcel() {
-        if (JoinMembers.length < 1) {
-            alert("請加入參加人員");
-            return;
+        function addToJoin() {
+            if ($('.searchName').val() != "") {
+                let temp = [];
+                let Tempstr = "";
+                $(`.name li`).css("display", "none");
+                temp.push($('.searchName').val());
+                if (document.querySelector('.light1').checked) { temp.push(1); } else { temp.push(0); }
+                if (document.querySelector('.light2').checked) { temp.push(1); } else { temp.push(0); }
+                if (document.querySelector('.light3').checked) { temp.push(1); } else { temp.push(0); }
+                temp.push($('.age').val());
+                if ($('.year').val() != "" && $('.month').val() != "" && $('.day').val() != "") {
+                    let year = parseInt($('.year').val());
+                    let month = parseInt($('.month').val());
+                    let day = parseInt($('.day').val());
+                    temp.push(`${year}/${month}/${day}`);
+                } else { temp.push(""); }
+                temp.push($('.address').val());
+                Tempstr = temp.toString().replace(/,/g, '-');
+                JoinMembers.push(Tempstr);
+                $('.searchName').val("");
+                $('.age').val("");
+                $('.year').val("");
+                $('.month').val("");
+                $('.day').val("");
+                $('.address').val("");
+                document.querySelector('.light1').checked = false;
+                document.querySelector('.light2').checked = false;
+                document.querySelector('.light3').checked = false;
+                FreshList();
+            }
         }
-        const membersData = JoinMembers.map(member => Object.values(member).join(',')).join('|');
-        showLoading(true);
-        $.ajax({
-            type: "POST",
-            dataType: 'text',
-            url: GAS_API,
-            data: { mission: 'MakingMembersExcel', members: membersData },
-            success: function (result) {
-                $('.PrintLink').html(`<a href="${result}">查看結果</a>`);
-                alert("製作完成！");
-            },
-            complete: () => showLoading(false)
-        });
-    }
 
-    function copyInput(copyString) {
-        const textarea = document.createElement('textarea');
-        textarea.value = copyString;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
-    }
-</script>
+        function RemoveJoin() {
+            JoinMembers.forEach(function (e, index) {
+                if (event.target.id == e.split('-')[0]) {
+                    JoinMembers.splice(index, 1);
+                }
+            })
+            FreshList();
+        }
 
+        function FreshList() {
+            let tableDom = '';
+            let light1 = "";
+            let light2 = "";
+            let light3 = "";
+            for (i = 0; i < JoinMembers.length; i++) {
+                if (parseInt(JoinMembers[i].split('-')[1]) == 1) { light1 = "✔"; } else { light1 = ""; }
+                if (parseInt(JoinMembers[i].split('-')[2]) == 1) { light2 = "✔"; } else { light2 = ""; }
+                if (parseInt(JoinMembers[i].split('-')[3]) == 1) { light3 = "✔"; } else { light3 = ""; }
+                name = JoinMembers[i].split('-')[0];
+                if (i % 2 === 0) {
+                    tableDom = tableDom + `<tr class="table-warning">`;
+                }
+                else { tableDom = tableDom + `<tr class="table-info">`; }
+                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[0]}</td>`;
+                tableDom = tableDom + `<td>${light1}</td>`;
+                tableDom = tableDom + `<td>${light2}</td>`;
+                tableDom = tableDom + `<td>${light3}</td>`;
+                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[4]}</td>`;
+                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[5]}</td>`;
+                tableDom = tableDom + `<td>${JoinMembers[i].split('-')[6]}</td>`;
+                tableDom = tableDom + `<td><button id=${name}>X</button></td>`;
+                tableDom = tableDom + "</tr>";
+            }
+            $('.ListTbody').html(tableDom);
+            for (i = 0; i < JoinMembers.length; i++) {
+                name = JoinMembers[i].split('-')[0];
+                $(`#${name}`).on('click', function () { RemoveJoin() });
+            }
+        }
+
+        function MakeExcel() {
+            if (JoinMembers.length < 1) { alert("請加入參加人員"); return; }
+            var member = "";
+            member = JoinMembers.toString();
+            member = member.replace(/,/g, '|');
+            member = member.replace(/-/g, ',');
+            $.ajax({
+                beforeSend: function () {
+                    //將div顯示
+                    $('#Gif').attr('src', LoadingGif[Math.floor(Math.random() * 11)]);
+                    $('#loading').css("display", "");
+                },
+                type: "POST",
+                dataType: 'text',
+                url: GAS_API,
+                data: {
+                    mission: 'LightingUpdateMembers',
+                    members: member
+                },
+                success: function (result) {
+                    // console.log(result);
+                }
+            });
+            $.ajax({
+                type: "POST",
+                dataType: 'text',
+                url: GAS_API,
+                data: {
+                    mission: 'MakingMembersExcel',
+                    members: member
+                },
+                success: function (result) {
+                    $('.PrintLink').html(`<a href="https://docs.google.com/spreadsheets/d/11wo6gQQ2Ba0yLBfC6_zS_EwrMfBFFsVDYUm4SuNKqu8">查看結果</a>`);
+                },
+                complete: function () {
+                    //再次隱藏//可利用setTimeout 讓loading效果明顯
+                    // $('#loading').css("display", "none");
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 100);
+                    alert("製作完成！");
+                }
+            });
+        }
+
+        function copyInput(copyString) {
+            let txa = document.createElement('textarea');
+            txa.value = copyString;
+            document.body.appendChild(txa);
+            txa.select();
+            var res = document.execCommand('copy');
+            document.execCommand('copy');
+            document.execCommand('copy');
+            document.execCommand('copy');
+            document.body.removeChild(txa);
+        }
+    </script>
 </body>
 
 </html>
