@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>明聖宮-名單製作</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
+        integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+        crossorigin="anonymous"></script>
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            text-align: center;
+            border: 0.5px solid #ddd;
+            padding: 8px;
+        }
+
+        td:nth-child(8) {
+            text-align: left;
+        }
+
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 5%;
+        }
+
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 10%;
+        }
+
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 5%;
+        }
+
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 5%;
+        }
+
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: 5%;
+        }
+
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 5%;
+        }
+
+        th:nth-child(7),
+        td:nth-child(7) {
+            width: 10%;
+        }
+
+        th:nth-child(8),
+        td:nth-child(8) {
+            width: 45%;
+        }
+
+        th:nth-child(9),
+        td:nth-child(9) {
+            width: 5%;
+        }
+
+        th:nth-child(10),
+        td:nth-child(10) {
+            width: 5%;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #ddd;
+        }
+
+        th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: center;
+            background-color: #6c91c0;
+            color: white;
+        }
+
+        #AddMembersModal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.5s;
+        }
+
+        #AddMembersModal .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        }
+
+        #AddMembersModal .close {
+            color: #aaaaaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        #AddMembersModal .close:hover,
+        #AddMembersModal .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        #AddMembersModal input[type="text"],
+        #AddMembersModal .input-field,
+        #AddMembersModal button {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        #AddMembersModal button {
+            background-color: #04AA6D;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #AddMembersModal button:hover {
+            opacity: 0.8;
+        }
+
+        #AddMembersModal .checkbox-container {
+            margin: 10px 0;
+        }
+
+        #AddMembersModal .checkbox-container input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .loadingdiv {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loadingdiv img {
+            max-width: 95%;
+            max-height: 95vh;
+            object-fit: contain;
+        }
+
+        td button {
+
+            background: linear-gradient(to bottom, #ffffff 0%, #e3d1ff 100%);
+            /* 漸變色背景 */
+            border: none;
+            color: rgb(0, 0, 0);
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(239, 240, 255, 0.19);
+        }
+
+        /* 按鈕懸停效果 */
+        td button:hover {
+            background: linear-gradient(to bottom, #389ed5 0%, #4fc1e9 100%);
+            /* 漸變色背景（反轉）*/
+            box-shadow: 0 12px 20px 0 rgba(0, 0, 0, 0.3), 0 10px 30px 0 rgba(0, 0, 0, 0.22);
+            /* 懸停時更深的陰影效果 */
+        }
+
+        /* 按鈕按下效果 */
+        td button:active {
+            transform: translateY(2px);
+            /* 點擊時稍微下移按鈕 */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="AddMembersModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>請輸入資料</h2>
+            <input type="text" id="name" class="input-field" placeholder="名字">
+            <input type="text" id="year" class="input-field birthday-input" placeholder="年">
+            <input type="text" id="month" class="input-field birthday-input" placeholder="月">
+            <input type="text" id="day" class="input-field birthday-input" placeholder="日">
+            <input type="text" id="address" class="input-field" placeholder="地址">
+            <div>
+                <input type="checkbox" id="peace">
+                <label for="peace">安太歲</label>
+            </div>
+            <div>
+                <input type="checkbox" id="light">
+                <label for="light">光明燈</label>
+            </div>
+            <div>
+                <input type="checkbox" id="wealth">
+                <label for="wealth">財利燈</label>
+            </div>
+            <div>
+                <input type="checkbox" id="puTu">
+                <label for="puTu">普渡</label>
+            </div>
+            <button id="submitAddFamilyBtn" onclick="submitAddFamily()">新增</button>
+            <button id="saveBtn" style="display:none;" onclick="updateData()">保存</button>
+            <button id="submitAddMemberBtn" style="display:none;" onclick="submitAddMember()">加入</button>
+        </div>
+    </div>
+
+    <div class="button-container">
+        <div class="SaveData">
+            <button onclick="submitAllData('UpdateMemberData')">儲存資料</button>
+        </div>
+        <div class="MakeMemberJoin">
+            <button onclick="submitAllData('MakeMemberJoin')">製作報名表</button>
+        </div>
+        <div class="MakeLightExcel">
+            <button onclick="submitAllData('LightExcel')">製作點燈文件</button>
+        </div>
+        <div class="MakePutuExcel">
+            <p><strong class="cyclicalYear"></strong></p>
+            <strong style="font-size: 20px;">普渡日期:</strong><input type="number" class="putuyear" placeholder="民國"
+                value=""><strong style="font-size: 20px;">年</strong>
+            <input type="number" class="putumonth" placeholder="月" value=""><strong style="font-size: 20px;">月</strong>
+            <input type="number" class="putuday" placeholder="日" value=""><strong style="font-size: 20px;">日</strong>
+
+            <button onclick="submitAllData('PuduExcel')">製作普渡文件</button>
+        </div>
+    </div>
+    <br>
+    <div class="AddFaily">
+        <button onclick="openModal()">新增家庭組</button>
+    </div>
+    <table class="table-title">
+        <thead class="sticky">
+            <tr>
+                <th>使用 <input type="checkbox" checked="true" class="AllAble" /><label for="checkboxStyle"></label></th>
+                <th>姓名</th>
+                <th>安太歲</th>
+                <th>光明燈</th>
+                <th>財利燈</th>
+                <th>普渡</th>
+                <th>生日</th>
+                <th>地址</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+    </table>
+
+    <div class="loadingdiv" id="loading" style="display: none">
+        <img id="Gif" src="1.gif" />
+    </div>
+
+    <script>
+        const GAS_API = "https://script.google.com/macros/s/AKfycbxt07c4RqMRoWKK8njuvn7fhA-ovqDaNnPVPGnTGTV8FC52PLIh99n_FlSxHIt3itwW/exec";
+        var LoadingGif = ["1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif", "11.gif", "12.gif"];
+
+        window.onload = function () {
+            var allCheckbox = document.querySelector('.AllAble');
+            allCheckbox.addEventListener('change', function () {
+                var checkboxes = document.querySelectorAll('.able');
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.checked = allCheckbox.checked;
+                });
+            });
+
+            $("#year, .putuyear").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1) { $(this).val(""); }
+            });
+            $("#month, .putumonth").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 12) { $(this).val(""); }
+            });
+            $("#day, .putuday").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 31) { $(this).val(""); }
+            });
+            $(".putuyear").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1) { $(this).val(""); document.querySelector('.cyclicalYear').innerText = "" } else {
+                    document.querySelector('.cyclicalYear').innerText = `${cyclical(parseInt($(this).val()) + parseInt(1911))} 年`;
+                }
+            });
+            $(".putumonth").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 12) { $(this).val(""); }
+            });
+            $(".putuday").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 31) { $(this).val(""); }
+            });
+
+            var HttpData = {
+                "mission": "GetAllMembers",
+                "families": []
+            };
+            $.ajax({
+                url: GAS_API,
+                type: 'POST',
+                data: JSON.stringify(HttpData),
+                dataType: 'JSON',
+                beforeSend: function () {
+                    $('#Gif').attr('src', LoadingGif[Math.floor(Math.random() * 11)]);
+                    $('#loading').css("display", "");
+                },
+                success: function (result) {
+                    if (result.status == "OK") { console.log("GetAllMembers SUCCESS") }
+                    var responseData = result.message;
+                    Object.values(responseData).forEach(function (family) {
+                        var div = document.createElement('div');
+                        div.className = 'Family';
+                        div.id = family.familyId;
+
+                        var table = document.createElement('table');
+                        table.className = 'dynamic-table';
+                        var tbody = document.createElement('tbody');
+
+                        family.members.forEach(function (member) {
+                            var tr = document.createElement('tr');
+                            tr.innerHTML = `
+                            <td><input type="checkbox" checked="true" class="able"/></td>
+                            <td>${member.name}</td>
+                            <td>${member.peace == true ? "𝙊" : "✘"}</td>
+                            <td>${member.light == true ? "𝙊" : "✘"}</td>
+                            <td>${member.wealth == true ? "𝙊" : "✘"}</td>
+                            <td>${member.puTu == true ? "𝙊" : "✘"}</td>
+                            <td>${member.birthday}</td>
+                            <td>${member.address}</td>
+                            <td><button class="Edit" onclick="editData(this.parentNode.parentNode)">修改</button></td>
+                            <td><button class="Delete" onclick="deleteData(this.parentNode.parentNode)">刪除</button></td>`;
+                            tbody.appendChild(tr);
+                        });
+
+                        var addMemberTr = document.createElement('tr');
+                        addMemberTr.innerHTML = `<td colspan="8"><button class="AddMember" onclick="AddMember(this.parentNode.parentNode.parentNode)">新增成員</button></td>`;
+                        tbody.appendChild(addMemberTr);
+
+                        table.appendChild(tbody);
+                        div.appendChild(table);
+                        document.body.appendChild(div);
+                    });
+                },
+                complete: function () {
+                    $('#loading').css("display", "none");
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 2000);
+                }
+            });
+        }
+
+        var modal = document.getElementById("AddMembersModal");
+        var span = document.getElementsByClassName("close")[0];
+        var submitAddFamilyBtn = document.getElementById("submitAddFamilyBtn");
+        var saveBtn = document.getElementById("saveBtn");
+        var submitAddMemberBtn = document.getElementById("submitAddMemberBtn");
+        var currentAddMemberElement = null;
+        var currentEditingElement = null;
+
+        span.onclick = function () {
+            modal.style.display = "none";
+            clearFormData();
+        }
+        function openModal() {
+            modal.querySelector("h2").innerText = `新增家庭第一位`;
+            modal.style.display = "block";
+            submitAddFamilyBtn.style.display = "block";
+            saveBtn.style.display = "none";
+            submitAddMemberBtn.style.display = "none";
+            clearFormData();
+            currentEditingElement = null;
+        }
+        function clearFormData() {
+            document.getElementById("name").value = '';
+            document.getElementById("year").value = '';
+            document.getElementById("month").value = '';
+            document.getElementById("day").value = '';
+            document.getElementById("address").value = '';
+            document.getElementById("peace").checked = false;
+            document.getElementById("light").checked = false;
+            document.getElementById("wealth").checked = false;
+            document.getElementById("puTu").checked = false;
+        }
+
+        //新增家庭組
+        function submitAddFamily() {
+            var name = document.getElementById("name").value;
+            var year = document.getElementById("year").value;
+            var month = document.getElementById("month").value;
+            var day = document.getElementById("day").value;
+            var address = document.getElementById("address").value;
+            var peace = document.getElementById("peace").checked;
+            var light = document.getElementById("light").checked;
+            var wealth = document.getElementById("wealth").checked;
+            var puTu = document.getElementById("puTu").checked;
+
+            var div = document.createElement("div");
+            var familyCount = document.querySelectorAll(".Family").length + 1;
+            div.className = "Family";
+            div.id = "Family" + familyCount;
+            var table = document.createElement("table");
+            table.className = "dynamic-table";
+            var tbody = document.createElement("tbody");
+
+            var tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><input type="checkbox" checked="true" class="able"/></td>
+                <td>${name}</td>
+                <td>${peace == true ? "𝙊" : "✘"}</td>
+                <td>${light == true ? "𝙊" : "✘"}</td>
+                <td>${wealth == true ? "𝙊" : "✘"}</td>
+                <td>${puTu == true ? "𝙊" : "✘"}</td>
+                <td>${year}-${month}-${day}</td>
+                <td>${address}</td>
+                <td><button class="Edit" onclick="editData(this.parentNode.parentNode)">修改</button></td>
+                <td><button class="Delete" onclick="deleteData(this.parentNode.parentNode)">刪除</button></td>`;
+            tbody.appendChild(tr);
+
+            var addMemberTr = document.createElement("tr");
+            addMemberTr.innerHTML = `<td colspan="10"><button class="AddMember" onclick="AddMember(this.parentNode.parentNode.parentNode)">新增成員</button></td>`;
+            tbody.appendChild(addMemberTr);
+
+            table.appendChild(tbody);
+            div.appendChild(table);
+            document.body.appendChild(div);
+
+            modal.style.display = "none";
+            clearFormData();
+        }
+        //編輯資料
+        function editData(trElement) {
+            var tdArray = trElement.querySelectorAll("td");
+            document.getElementById("name").value = tdArray[1].textContent.replace("名字: ", "");
+            document.getElementById("peace").checked = tdArray[2].textContent.includes("𝙊");
+            document.getElementById("light").checked = tdArray[3].textContent.includes("𝙊");
+            document.getElementById("wealth").checked = tdArray[4].textContent.includes("𝙊");
+            document.getElementById("puTu").checked = tdArray[5].textContent.includes("𝙊");
+            var birthday = tdArray[6].textContent.replace("生日: ", "").split("-");
+            document.getElementById("year").value = birthday[0];
+            document.getElementById("month").value = birthday[1];
+            document.getElementById("day").value = birthday[2];
+            document.getElementById("address").value = tdArray[7].textContent.replace("地址: ", "");
+
+            modal.querySelector("h2").innerText = `編輯 ${document.getElementById("name").value} 的資料`;
+            modal.style.display = "block";
+            submitAddFamilyBtn.style.display = "none";
+            saveBtn.style.display = "block";
+            submitAddMemberBtn.style.display = "none";
+
+            currentEditingElement = trElement;
+        }
+        function updateData() {
+            if (!currentEditingElement) return;
+            var name = document.getElementById("name").value;
+            var peace = document.getElementById("peace").checked ? "𝙊" : "✘";
+            var light = document.getElementById("light").checked ? "𝙊" : "✘";
+            var wealth = document.getElementById("wealth").checked ? "𝙊" : "✘";
+            var puTu = document.getElementById("puTu").checked ? "𝙊" : "✘";
+            var year = document.getElementById("year").value;
+            var month = document.getElementById("month").value;
+            var day = document.getElementById("day").value;
+            var address = document.getElementById("address").value;
+
+            currentEditingElement.cells[1].textContent = `${name}`;
+            currentEditingElement.cells[2].textContent = `${peace}`;
+            currentEditingElement.cells[3].textContent = `${light}`;
+            currentEditingElement.cells[4].textContent = `${wealth}`;
+            currentEditingElement.cells[5].textContent = `${puTu}`;
+            currentEditingElement.cells[6].textContent = `${year}-${month}-${day}`;
+            currentEditingElement.cells[7].textContent = `${address}`;
+
+
+            modal.style.display = "none";
+            clearFormData();
+        }
+        //刪除家庭會員
+        function deleteData(trElement) {
+            var tBody = trElement.parentNode;
+            trElement.remove();
+            if (tBody && tBody.tagName === 'TBODY') {
+                var trCount = tBody.getElementsByTagName('tr').length;
+                if (trCount < 2) {
+                    var div = tBody.parentNode.parentNode;
+                    if (div && div.tagName === 'DIV') {
+                        div.remove();
+                    }
+                }
+            }
+        }
+        ////新增家庭會員
+        function AddMember(Element) {
+            openModal();
+
+            modal.querySelector("h2").innerText = `新增家庭成員`;
+            modal.style.display = "block";
+            submitAddFamilyBtn.style.display = "none";
+            saveBtn.style.display = "none";
+            submitAddMemberBtn.style.display = "block";
+
+            var tdArray = Element.querySelectorAll("td");
+            document.getElementById("address").value = tdArray[tdArray.length - 4].textContent.replace("地址: ", "");
+            currentAddMemberElement = Element;
+
+
+        }
+        function submitAddMember() {
+            if (!currentAddMemberElement) return;
+            var name = document.getElementById("name").value;
+            if (!name) { alert("名字是必填項目！"); return; }
+            var year = document.getElementById("year").value;
+            var month = document.getElementById("month").value;
+            var day = document.getElementById("day").value;
+            var address = document.getElementById("address").value;
+            var peace = document.getElementById("peace").checked;
+            var light = document.getElementById("light").checked;
+            var wealth = document.getElementById("wealth").checked;
+            var puTu = document.getElementById("puTu").checked;
+
+            var newTr = document.createElement("tr");
+            newTr.innerHTML = `<td>${name}</td>
+                   <td>安太歲: ${peace}</td>
+                   <td>光明燈: ${light}</td>
+                   <td>財利燈: ${wealth}</td>
+                   <td>普渡: ${puTu}</td>
+                   <td>生日: ${year}-${month}-${day}</td>
+                   <td>地址: ${address}</td>
+                   <td><button class="Edit" onclick="editData(this.parentNode.parentNode)">修改</button></td>
+                   <td><button class="Delete" onclick="deleteData(this.parentNode.parentNode)">刪除</button></td>`;
+
+            var trs = currentAddMemberElement.getElementsByTagName("tr");
+            var lastTr = trs[trs.length - 1];
+            currentAddMemberElement.insertBefore(newTr, lastTr);
+
+            modal.style.display = "none";
+            clearFormData();
+        }
+
+        //發送HTTP POST
+        function submitAllData(MissionMode) {
+            var families = document.querySelectorAll('.Family');
+            var data = {
+                mission: MissionMode,
+                families: []
+            };
+            if (MissionMode == "UpdateMemberData" || MissionMode == "MakeMemberJoin") {
+                families.forEach(function (family) {
+                    var familyId = family.id;
+                    var members = [];
+                    var rows = family.querySelectorAll('tr');
+                    rows.forEach(function (row, index) {
+                        if (index < rows.length - 1) {
+                            members.push(extractMemberData(row));
+                        }
+                    });
+                    data.families.push({
+                        familyId: familyId,
+                        members: members
+                    });
+                });
+            }
+            else if (MissionMode == "LightExcel" || MissionMode == "PuduExcel") {
+                if (MissionMode == "PuduExcel") {
+                    if ($(".putuyear").val() == "" || $(".putumonth").val() == "" || $(".putuday").val() == "") {
+                        alert("請輸入普渡日期");
+                        return;
+                    }
+                    var putuyear = document.querySelector('.cyclicalYear').innerText.split(" ")[0];
+                    var putumonth = IntToChinese(parseInt($('.putumonth').val()));
+                    var putuday = IntToChinese(parseInt($('.putuday').val()));
+                    MissionMode = `PuduExcel${putuyear}-${putumonth}-${putuday}`;
+                }
+                families.forEach(function (family) {
+                    var familyId = family.id;
+                    var members = [];
+                    var rows = family.querySelectorAll('tr');
+                    rows.forEach(function (row, index) {
+                        if (index < rows.length - 1) {
+                            var checkbox = row.querySelector("input[type='checkbox']");
+                            if (checkbox !== null && checkbox.checked) {
+                                members.push(extractMemberData(row));
+                            }
+                        }
+                    });
+                    data.families.push({
+                        familyId: familyId,
+                        members: members
+                    });
+                });
+            }
+            // console.log(JSON.stringify(data));
+
+            $.ajax({
+                url: GAS_API,
+                type: 'POST',
+                data: JSON.stringify(data),
+                dataType: 'JSON',
+                beforeSend: function () {
+                    $('#Gif').attr('src', LoadingGif[Math.floor(Math.random() * 11)]);
+                    $('#loading').css("display", "");
+                },
+                success: function (result) {
+                    if (result.status == "OK") { console.log(`${MissionMode} SUCCESS`) }
+                    $('.PrintLink').html(`<a href="https://docs.google.com/spreadsheets/d/11wo6gQQ2Ba0yLBfC6_zS_EwrMfBFFsVDYUm4SuNKqu8">查看結果</a>`);
+                    setTimeout(function () { $('#loading').css("display", "none"); }, 100);
+                    alert("作業完成！");
+                }
+            });
+
+        }
+        function extractMemberData(row) {
+            var name = row.cells[1].textContent;
+            var peace = row.cells[2].textContent.includes('𝙊');
+            var light = row.cells[3].textContent.includes('𝙊');
+            var wealth = row.cells[4].textContent.includes('𝙊');
+            var puTu = row.cells[5].textContent.includes('𝙊');
+            var birthday = row.cells[6].textContent.replace('生日: ', '');
+            var address = row.cells[7].textContent.replace('地址: ', '');
+
+            return {
+                name: name,
+                peace: peace,
+                light: light,
+                wealth: wealth,
+                puTu: puTu,
+                birthday: birthday,
+                address: address
+            };
+        }
+
+        function cyclical(num) {
+            num = num - 1401;
+            let sky, floor;
+            let Gan = new Array("甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸");
+            let Zhi = new Array("子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥");
+            if ((num % 10 + 8) >= 10) { if (num % 10 - 3 < 0) { sky = Gan[num % 10 + 7]; } else { sky = Gan[num % 10 - 3] } } else { sky = Gan[num % 10 + 7] }
+            if ((num % 12 + 6) >= 12) { if (num % 12 - 7 < 0) { floor = Zhi[num % 12 + 5] } else { floor = Zhi[num % 12 - 7] } } else { floor = Zhi[num % 12 + 5] }
+            return (sky + floor)
+        }
+        function IntToChinese(num) {
+            const chineseNumbers = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九", "十",
+                "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九",
+                "二十", "二十一", "二十二", "二十三", "二十四", "二十五", "二十六", "二十七",
+                "二十八", "二十九", "三十", "三十一"];
+            return chineseNumbers[num];
+        }
+
+    </script>
+</body>
+
+</html>

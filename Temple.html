@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>明聖宮</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
+        integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+        crossorigin="anonymous"></script>
+    <script src="calendar.js"></script>
+    <style>
+        table tr {
+            width: 100%;
+        }
+
+        table tr td input {
+            width: 70%;
+        }
+
+        .IMG {
+            width: 50%;
+            height: 100%;
+            transition: all 0.3s ease-out;
+        }
+
+        .Light,
+        .ExcelCell,
+        .Pudu {
+            margin: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 80vw;
+            height: 200px;
+        }
+
+        .Light:hover img {
+            width: 70%;
+            height: 150%;
+            z-index: 999;
+            transition: all 0.3s ease-out;
+        }
+
+        .ExcelCell:hover img {
+            width: 70%;
+            height: 130%;
+            z-index: 999;
+            transition: all 0.3s ease-out;
+        }
+
+        .Pudu:hover img {
+            width: 90%;
+            height: 110%;
+            z-index: 999;
+            transition: all 0.3s ease-out;
+        }
+
+        .Text {
+            writing-mode: vertical-rl;
+            margin-top: 15px;
+            font-weight: bolder;
+            font-size: large;
+            color: rgb(94, 35, 9);
+        }
+    </style>
+</head>
+
+
+
+<body>
+    <table class="table table-borderless">
+        <tr>
+            <td></td>
+            <td><strong>國曆</strong></td>
+            <td><input type="number" class="solarYear" placeholder="民國年" value="">年</td>
+            <td><input type="number" class="solarMonth" placeholder="月" value="">月</td>
+            <td><input type="number" class="solarDay" placeholder="日" value="">日</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><strong>農曆</strong></td>
+            <td><input type="number" class="lunarYear" placeholder="民國年" value="">年</td>
+            <td><input type="number" class="lunarMonth" placeholder="月" value="">月</td>
+            <td><input type="number" class="lunarDay" placeholder="日" value="">日</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td><strong><label class="cyclicalYear"></label></strong></td>
+            <td><strong><label class="Animal"></label></strong></td>
+            <td><strong><label class="astro"></label></strong></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td colspan="4">
+                <div class="Light">
+                    <p class="Text">製作安太歲、點燈表</p> <img class="IMG" src="MembersCell.png" alt="點燈示意圖">
+                </div>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+        <!-- <tr>
+            <td></td>
+            <td colspan="4">
+                <div class="ExcelCell">
+                    <p class="Text">製作點燈表格
+                    </p> <img class="IMG" src="cell.PNG" alt="點燈示意圖">
+                </div>
+            </td>
+            <td></td>
+            <td></td>
+        </tr> -->
+        <tr>
+            <td></td>
+            <td colspan="4">
+                <div class="Pudu">
+                    <p class="Text">製作普渡人員表</p> <img class="IMG" src="pudu.png" alt="點燈示意圖">
+                </div>
+            </td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+    <script>
+        window.onload = function () {
+            $(".solarYear").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1) { $(this).val(""); }
+                else {
+                    if ($(this).val() > 189) { alert("超出年分"); } else { TurnDate("solar"); }
+                }
+            });
+            $(".solarMonth").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 12) { $(this).val(""); }
+                else { TurnDate("solar"); }
+            });
+            $(".solarDay").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 31) { $(this).val(""); }
+                else { TurnDate("solar"); }
+            });
+
+            $(".lunarYear").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1) { $(this).val(""); }
+                else {
+                    if ($(this).val() > 189) { alert("超出年分"); } else { TurnDate("lunar"); }
+                }
+            });
+            $(".lunarMonth").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 12) { $(this).val(""); }
+                else { TurnDate("lunar"); }
+            });
+            $(".lunarDay").on("keypress keyup change", function (event) {
+                if ($(this).val() < 1 || $(this).val() > 31) { $(this).val(""); }
+                else { TurnDate("lunar"); }
+            });
+            $(".Light").on("click", function () { window.open('https://dkai666.github.io/Light.html'); })
+            $(".ExcelCell").on("click", function () { window.open('https://dkai666.github.io/Cell.html'); })
+            $(".Pudu").on("click", function () { window.open('https://dkai666.github.io/Pudu.html'); })
+        }
+
+        function TurnDate(Date) {
+            if (Date == "solar" || Date == "solar" || Date == "solar") {
+                if ($(".solarYear").val() != "" && $(".solarMonth").val() != "" && $(".solarDay").val() != "") {
+                    let targetDate = calendar.solar2lunar(parseInt($(".solarYear").val()) + 1911, $(".solarMonth").val(), $(".solarDay").val())
+                    $(".lunarYear").val(parseInt(targetDate.lunarDate.split('-')[0]) - 1911);
+                    $(".lunarMonth").val(targetDate.lunarDate.split('-')[1]);
+                    $(".lunarDay").val(targetDate.lunarDate.split('-')[2]);
+                    $(".cyclicalYear").text(`${targetDate.gzYear}年`);
+                    $(".Animal").text(`生肖: ${targetDate.Animal}`);
+                    $(".astro").text(`${targetDate.astro}`);
+                } else {
+                    $(".lunarYear").val("");
+                    $(".lunarMonth").val("");
+                    $(".lunarDay").val("");
+                    $(".cyclicalYear").text("");
+                    $(".Animal").text("");
+                    $(".astro").text("");
+                }
+            }
+            else if (Date == "lunar" || Date == "lunar" || Date == "lunar") {
+                if ($(".lunarYear").val() != "" && $(".lunarMonth").val() != "" && $(".lunarDay").val() != "") {
+                    let targetDate = calendar.lunar2solar(parseInt($(".lunarYear").val()) + 1911, $(".lunarMonth").val(), $(".lunarDay").val())
+                    $(".solarYear").val(parseInt(targetDate.date.split('-')[0]) - 1911);
+                    $(".solarMonth").val(targetDate.date.split('-')[1]);
+                    $(".solarDay").val(targetDate.date.split('-')[2]);
+                    $(".cyclicalYear").text(`${targetDate.gzYear}年`);
+                    $(".Animal").text(`生肖: ${targetDate.Animal}`);
+                    $(".astro").text(`${targetDate.astro}`);
+
+                } else {
+                    $(".solarYear").val("");
+                    $(".solarMonth").val("");
+                    $(".solarDay").val("");
+                    $(".cyclicalYear").text("");
+                    $(".Animal").text("");
+                    $(".astro").text("");
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Only My Baby</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <style>
+        textarea {
+            height: 60px;
+            width: 80%;
+        }
+
+        .dkArea {
+            position: relative;
+            width: 50%;
+            height: 300px;
+            overflow: auto;
+            border-radius: 20px;
+            background-image: linear-gradient(0deg, transparent, rgb(131, 216, 250));
+        }
+
+        .chuArea {
+            width: 50%;
+            height: 300px;
+            overflow: auto;
+            border-radius: 20px;
+            background-image: linear-gradient(0deg, transparent, rgb(251, 149, 255));
+        }
+
+        .Area {
+            position: relative;
+            display: flex;
+            width: 100%;
+        }
+
+        ul li {
+            list-style-type: none;
+            margin-left: -20px;
+            padding-right: 5px;
+            font-size: small;
+            font-style: italic;
+        }
+
+        ul li:nth-child(2n) {
+            font-style: normal;
+            font-size: medium;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        .block {
+            position: absolute;
+            width: 100%;
+            height: 110%;
+            top: 0px;
+            left: 0px;
+            background-image: linear-gradient(180deg, transparent, rgb(255, 255, 255));
+            z-index: 500;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 class="LoveDate" style="color: rgb(255, 198, 208)"></h1>
+    <textarea></textarea>
+    <button onclick="WriteLetter('Write')">送出</button>
+    <div class="Area">
+        <div class="block"></div>
+        <ul class="dkArea"></ul>
+        <ul class="chuArea"></ul>
+    </div>
+
+    <script>
+        window.onload = function () {
+            let today = new Date();
+            let todayDate = new Date(`${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`);
+            let startDate = new Date("11/14/2021");
+            let Howlong = Math.abs(todayDate - startDate);
+            document.querySelector(".LoveDate").innerHTML = `Love you ${Howlong / (1000 * 3600 * 24) + 1}th Day`;
+            WriteLetter("GetAllInfo");
+        }
+        function WriteLetter(mission) {
+            let text = document.querySelector("textarea").value;
+            $.ajax({
+                url: "https://script.google.com/macros/s/AKfycbx1JCE8ijQjh5dCPdcV7pnucbroY14IKswqXQHkYSW4ClhJz4WDvRL7dJDdflpnPoS1/exec",
+                data: {
+                    mission: mission,
+                    letter: text
+                },
+                type: "POST",
+                dataType: 'text',
+                success: function (result) {
+                    if (mission == "GetAllInfo") { ShowOn(result); }
+                    else { window.location.href = 'https://dkai666.github.io/chu.html'; }
+                }
+            });
+        }
+        function ShowOn(result) {
+            let dkArea = document.querySelector('.dkArea');
+            let chuArea = document.querySelector('.chuArea');
+            dkArea.innerHTML = '';
+            chuArea.innerHTML = '';
+            let dkLi = dkArea.getElementsByTagName('li');
+            let chuLi = chuArea.getElementsByTagName('li');
+            resultArray = result.split(',');
+            let letterValue
+            for (i = 0; i < resultArray.length / 5; i++) {
+                for (j = 0; j < 5; j++) {
+                    if (j < 2 && resultArray[5 * i + j].length > 0) {
+                        letterValue = document.createElement('li');
+                        if (j % 2 == 1) { letterValue.innerHTML = `[${resultArray[5 * i + j]}]`; }
+                        else { letterValue.innerHTML = resultArray[5 * i + j]; }
+                        if (dkLi.length > 0) { dkArea.insertBefore(letterValue, dkLi[0]); }
+                        else {
+                            dkArea.appendChild(letterValue);
+                            dkLi = dkArea.getElementsByTagName('li');
+                        }
+                    }
+                    else if (j >= 2 && j < 4 && resultArray[5 * i + j].length > 0) {
+                        letterValue = document.createElement('li');
+                        if (j % 2 == 1) { letterValue.innerHTML = `[${resultArray[5 * i + j]}]`; }
+                        else { letterValue.innerHTML = resultArray[5 * i + j]; }
+                        if (chuLi.length > 0) { chuArea.insertBefore(letterValue, chuLi[0]); }
+                        else {
+                            chuArea.appendChild(letterValue);
+                            chuLi = chuArea.getElementsByTagName('li');
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
