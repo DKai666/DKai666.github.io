@@ -291,6 +291,7 @@
 
             <button onclick="submitAllData('PuduExcel')">製作普渡文件</button>
         </div>
+        <p><strong class="PrintLink"></strong></p>
     </div>
     <br>
     <div class="AddFaily">
@@ -318,7 +319,7 @@
     </div>
 
     <script>
-        const GAS_API = "https://script.google.com/macros/s/AKfycbxt07c4RqMRoWKK8njuvn7fhA-ovqDaNnPVPGnTGTV8FC52PLIh99n_FlSxHIt3itwW/exec";
+        const GAS_API = "https://script.google.com/macros/s/AKfycbzgbjg7ZucBnk4PeQRjZ7RZDMG5rRcfnxJWb3XwhqPgupygvCd5jsz3pIZyO89jduZU/exec";
         var LoadingGif = ["1.gif", "2.gif", "3.gif", "4.gif", "5.gif", "6.gif", "7.gif", "8.gif", "9.gif", "10.gif", "11.gif", "12.gif"];
 
         window.onload = function () {
@@ -659,8 +660,8 @@
                     $('#loading').css("display", "");
                 },
                 success: function (result) {
-                    if (result.status == "OK") { console.log(`${MissionMode} SUCCESS`) }
-                    $('.PrintLink').html(`<a href="https://docs.google.com/spreadsheets/d/11wo6gQQ2Ba0yLBfC6_zS_EwrMfBFFsVDYUm4SuNKqu8">查看結果</a>`);
+                    if (result.status == "OK") { console.log(`${MissionMode} SUCCESS`);console.log(result.message) }
+                    $('.PrintLink').html(`<a href="https://docs.google.com/spreadsheets/d/${result.message}">查看結果</a>`);
                     setTimeout(function () { $('#loading').css("display", "none"); }, 100);
                     alert("作業完成！");
                 }
