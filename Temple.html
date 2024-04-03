@@ -30,39 +30,25 @@
         }
 
         .IMG {
-            width: 50%;
-            height: 100%;
+            width: 40%;
+            height: 40%;
+            object-fit: contain;
             transition: all 0.3s ease-out;
         }
 
-        .Light,
-        .ExcelCell,
-        .Pudu {
+        .Light {
             margin: auto;
+            margin-top: 30px;
             display: flex;
             justify-content: center;
             align-items: center;
-            width: 80vw;
-            height: 200px;
+
+
         }
 
         .Light:hover img {
-            width: 70%;
+            width: 60%;
             height: 150%;
-            z-index: 999;
-            transition: all 0.3s ease-out;
-        }
-
-        .ExcelCell:hover img {
-            width: 70%;
-            height: 130%;
-            z-index: 999;
-            transition: all 0.3s ease-out;
-        }
-
-        .Pudu:hover img {
-            width: 90%;
-            height: 110%;
             z-index: 999;
             transition: all 0.3s ease-out;
         }
@@ -112,32 +98,9 @@
             <td></td>
             <td colspan="4">
                 <div class="Light">
-                    <p class="Text">製作安太歲、點燈表</p> <img class="IMG" src="MembersCell.png" alt="點燈示意圖">
+                    <p class="Text">製作安太歲、點燈表</p> <img class="IMG" src="MakeExcel.png" alt="點燈示意圖">
                 </div>
             </td>
-            <td></td>
-            <td></td>
-        </tr>
-        <!-- <tr>
-            <td></td>
-            <td colspan="4">
-                <div class="ExcelCell">
-                    <p class="Text">製作點燈表格
-                    </p> <img class="IMG" src="cell.PNG" alt="點燈示意圖">
-                </div>
-            </td>
-            <td></td>
-            <td></td>
-        </tr> -->
-        <tr>
-            <td></td>
-            <td colspan="4">
-                <div class="Pudu">
-                    <p class="Text">製作普渡人員表</p> <img class="IMG" src="pudu.png" alt="點燈示意圖">
-                </div>
-            </td>
-            <td></td>
-            <td></td>
         </tr>
     </table>
     <script>
@@ -171,9 +134,7 @@
                 if ($(this).val() < 1 || $(this).val() > 31) { $(this).val(""); }
                 else { TurnDate("lunar"); }
             });
-            $(".Light").on("click", function () { window.open('https://dkai666.github.io/Light.html'); })
-            $(".ExcelCell").on("click", function () { window.open('https://dkai666.github.io/Cell.html'); })
-            $(".Pudu").on("click", function () { window.open('https://dkai666.github.io/Pudu.html'); })
+            $(".Light").on("click", function () { window.open('https://dkai666.github.io/MakeExcel.html'); })
         }
 
         function TurnDate(Date) {
