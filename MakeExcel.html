@@ -660,7 +660,7 @@
                     $('#loading').css("display", "");
                 },
                 success: function (result) {
-                    if (result.status == "OK") { console.log(`${MissionMode} SUCCESS`); console.log(result.message) }
+                    if (result.status == "OK") { console.log(`${MissionMode} SUCCESS`); console.log(result) }
                     $('.PrintLink').html(`<a href="https://docs.google.com/spreadsheets/d/${result.message}">查看結果</a>`);
                     setTimeout(function () { $('#loading').css("display", "none"); }, 100);
                     alert("作業完成！");
