@@ -627,6 +627,7 @@
                     var putumonth = IntToChinese(parseInt($('.putumonth').val()));
                     var putuday = IntToChinese(parseInt($('.putuday').val()));
                     MissionMode = `PuduExcel${putuyear}-${putumonth}-${putuday}`;
+                    data.mission = MissionMode;
                 }
                 families.forEach(function (family) {
                     var familyId = family.id;
@@ -664,7 +665,6 @@
                     alert("作業完成！");
                 }
             });
-
         }
         function extractMemberData(row) {
             var name = row.cells[1].textContent;
