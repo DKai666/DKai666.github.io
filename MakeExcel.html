@@ -563,10 +563,16 @@
 
 
         }
+
         function submitAddMember() {
             if (!currentAddMemberElement) return;
+
             var name = document.getElementById("name").value;
-            if (!name) { alert("名字是必填項目！"); return; }
+            if (!name) {
+                alert("名字是必填項目！");
+                return;
+            }
+
             var year = document.getElementById("year").value;
             var month = document.getElementById("month").value;
             var day = document.getElementById("day").value;
@@ -576,24 +582,31 @@
             var wealth = document.getElementById("wealth").checked;
             var puTu = document.getElementById("puTu").checked;
 
+            // 創建與載入資料格式一致的行
             var newTr = document.createElement("tr");
-            newTr.innerHTML = `<td>${name}</td>
-                   <td>安太歲: ${peace}</td>
-                   <td>光明燈: ${light}</td>
-                   <td>財利燈: ${wealth}</td>
-                   <td>普渡: ${puTu}</td>
-                   <td>生日: ${year}-${month}-${day}</td>
-                   <td>地址: ${address}</td>
-                   <td><button class="Edit" onclick="editData(this.parentNode.parentNode)">修改</button></td>
-                   <td><button class="Delete" onclick="deleteData(this.parentNode.parentNode)">刪除</button></td>`;
+            newTr.innerHTML = `
+                <td><input type="checkbox" checked="true" class="able"/></td>
+                <td>${name}</td>
+                <td>${peace ? "𝙊" : "✘"}</td>
+                <td>${light ? "𝙊" : "✘"}</td>
+                <td>${wealth ? "𝙊" : "✘"}</td>
+                <td>${puTu ? "𝙊" : "✘"}</td>
+                <td>${year}-${month}-${day}</td>
+                <td>${address}</td>
+                <td><button class="Edit" onclick="editData(this.parentNode.parentNode)">修改</button></td>
+                <td><button class="Delete" onclick="deleteData(this.parentNode.parentNode)">刪除</button></td>
+            `;
 
+            // 插入新增的行
             var trs = currentAddMemberElement.getElementsByTagName("tr");
             var lastTr = trs[trs.length - 1];
             currentAddMemberElement.insertBefore(newTr, lastTr);
 
+            // 清除表單資料並關閉 Modal
             modal.style.display = "none";
             clearFormData();
         }
+
 
         //發送HTTP POST
         function submitAllData(MissionMode) {
