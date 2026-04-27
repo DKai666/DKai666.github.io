@@ -262,9 +262,12 @@
 
   </div>
 
-  <div class="bottom" id="bottomBar" style="display:none;">
-    未收：<span id="unpaidAmount">0</span>
-  </div>
+<div class="bottom" id="bottomBar" style="display:none;">
+  <div>未收：<span id="unpaidAmount">0</span></div>
+  <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="openCollectMenu()">
+    催款 / 分享
+  </button>
+</div>
 
   <div id="loadingMask">
     <div class="loading-box">處理中...</div>
@@ -383,7 +386,79 @@ initPaymentSelect();
         alert(err.message);
       }
     }
+function openCollectMenu() {
+  if (!current) return;
 
+  const choice = prompt(
+`請選擇操作：
+1：分享催款訊息
+2：複製催款訊息
+3：只複製帳號`
+  );
+
+  if (choice === '1') {
+    shareReminder();
+  } else if (choice === '2') {
+    copyReminderText();
+  } else if (choice === '3') {
+    copyAccount();
+  }
+}
+
+function buildReminderText() {
+  if (!current) return '';
+
+  const unpaid = current.splits.filter(s => !s.paid);
+
+  const unpaidText = unpaid.length
+    ? unpaid
+        .map(s => `${s.name}：$${Number(s.amount || 0).toLocaleString()}`)
+        .join('\n')
+    : '全部都已付款';
+
+  const payInfo = current.account
+    ? `${current.bank} ${current.account}`
+    : current.bank;
+
+  const pageUrl = window.location.href;
+
+  return `${current.title}
+
+尚未付款：
+${unpaidText}
+
+收款資訊：${payInfo}
+付完請到下面網址按「已付」～
+${pageUrl}`;
+}
+
+async function shareReminder() {
+  const text = buildReminderText();
+  if (!text) return;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: current.title,
+        text
+      });
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+    }
+  }
+
+  copyReminderText();
+}
+
+function copyReminderText() {
+  const text = buildReminderText();
+  if (!text) return;
+
+  navigator.clipboard.writeText(text)
+    .then(() => alert('已複製催款訊息，可貼到對話框'))
+    .catch(() => alert(text));
+}
     /* ================= PAGE ================= */
 
     async function showList(needRefresh) {
