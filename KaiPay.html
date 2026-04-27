@@ -1045,16 +1045,10 @@ ${pageUrl}
     }
 
     function copyAccount() {
-      if (!current) return;
-
-      // 沒帳號就不允許複製
-      if (!current.account) {
-        return;
-      }
-
+      if (!current.account) { return; }
       navigator.clipboard.writeText(current.account)
         .then(() => showToast('已複製帳號，可直接貼到銀行 App'))
-        .catch(() => alert(current.account));
+        .catch(() => showMessage('瀏覽器阻擋複製，請手動複製：\n' + current.account));
     }
 
     /* ================= UTIL ================= */
