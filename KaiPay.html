@@ -404,7 +404,6 @@ function openCollectMenu() {
     copyAccount();
   }
 }
-
 function buildReminderText() {
   if (!current) return '';
 
@@ -412,24 +411,29 @@ function buildReminderText() {
 
   const unpaidText = unpaid.length
     ? unpaid
-        .map(s => `${s.name}：$${Number(s.amount || 0).toLocaleString()}`)
+        .map(s => `✨ ${s.name} $${Number(s.amount || 0).toLocaleString()}`)
         .join('\n')
-    : '全部都已付款';
+    : '🎉 大家都付完了，好讚！';
 
   const payInfo = current.account
     ? `${current.bank} ${current.account}`
     : current.bank;
 
+  const total = Number(current.total || 0).toLocaleString();
   const pageUrl = window.location.href;
 
-  return `${current.title}
+  return `我來收帳啦😆
 
-尚未付款：
+✨ ${current.title}
+總共 $${total}
+還有～
 ${unpaidText}
+帳號在這👇
+${payInfo}
 
-收款資訊：${payInfo}
-付完請到下面網址按「已付」～
-${pageUrl}`;
+轉完幫我點一下已付🙌
+${pageUrl}
+謝啦大家～🫶`;
 }
 
 async function shareReminder() {
