@@ -328,7 +328,6 @@
     let DB = [];
     let current = null;
     let members = [];
-    let apiRunning = false;
     const PAYMENT_METHODS = [
       { label: '臺灣(004)', bank: '臺灣', code: '004', needAccount: true },
       { label: '土地(005)', bank: '土地', code: '005', needAccount: true },
@@ -371,13 +370,38 @@
       { label: 'LinePay', bank: 'LinePay', code: '', needAccount: false },
       { label: '現金', bank: '現金', code: '', needAccount: false }
     ];
+
     /* ================= API ================= */
 
-    async function api(action, payload = {}) {
-      if (apiRunning) throw new Error('處理中');
+    let writeRunning = false;
 
-      apiRunning = true;
-      showLoading();
+    const WRITE_ACTIONS = new Set([
+      'CREATE_BILL',
+      'UPDATE_MEMBER_AMOUNT',
+      'TOGGLE_MEMBER_PAID',
+      'ADD_MEMBER_AND_REBALANCE',
+      'DELETE_MEMBER',
+      'DELETE_BILL'
+    ]);
+
+    const FULL_LOADING_ACTIONS = new Set([
+      'CREATE_BILL',
+      'ADD_MEMBER_AND_REBALANCE',
+      'DELETE_MEMBER',
+      'DELETE_BILL'
+    ]);
+
+    async function api(action, payload = {}) {
+      const isWrite = WRITE_ACTIONS.has(action);
+      const useFullLoading = FULL_LOADING_ACTIONS.has(action);
+
+      if (isWrite && writeRunning) {
+        showToast('資料儲存中，請稍候');
+        throw new Error('處理中');
+      }
+
+      if (isWrite) writeRunning = true;
+      if (useFullLoading) showLoading();
 
       try {
         const res = await fetch(API_URL, {
@@ -397,8 +421,8 @@
         return json.data;
 
       } finally {
-        apiRunning = false;
-        hideLoading();
+        if (isWrite) writeRunning = false;
+        if (useFullLoading) hideLoading();
       }
     }
 
@@ -434,9 +458,11 @@
         showMessage(err.message);
       }
     }
-    async function openCollectMenu() {
+
+    function openCollectMenu() {
       shareReminder();
     }
+
     function buildReminderText() {
       if (!current) return '';
 
@@ -490,11 +516,11 @@ ${pageUrl}
 
     function copyReminderText() {
       const text = buildReminderText();
-      if (!text) return;
+      if (!current || !current.account) return;
 
       navigator.clipboard.writeText(text)
         .then(() => showToast('已複製催款訊息，可貼到對話框'))
-        .catch(() => alert(text));
+        .catch(() => showMessage('複製失敗，請手動複製：\n' + text));
     }
     /* ================= PAGE ================= */
 
@@ -504,15 +530,16 @@ ${pageUrl}
       detailPage.style.display = 'none';
       bottomBar.style.display = 'none';
 
+      renderBillList();
+
       if (needRefresh) {
         try {
           DB = await api('GET_LIST');
+          renderBillList();
         } catch (err) {
           showMessage(err.message);
         }
       }
-
-      renderBillList();
     }
 
     function goCreate() {
@@ -547,6 +574,7 @@ ${pageUrl}
         showMessage(err.message);
       }
     }
+
     function formatDateOnly(value) {
       if (!value) return '';
 
@@ -988,17 +1016,23 @@ ${pageUrl}
 
     async function togglePaid(i) {
       const s = current.splits[i];
+      const oldPaid = s.paid;
+
+      s.paid = !s.paid;
+      renderCurrentBill();
 
       try {
         current = await api('TOGGLE_MEMBER_PAID', {
           billId: current.id,
           memberId: s.memberId,
-          paid: !s.paid
+          paid: s.paid
         });
 
         renderCurrentBill();
 
       } catch (err) {
+        s.paid = oldPaid;
+        renderCurrentBill();
         showMessage(err.message);
       }
     }
