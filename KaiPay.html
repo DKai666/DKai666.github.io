@@ -172,6 +172,54 @@
       border-radius: 12px;
       font-weight: 700;
     }
+
+    #toastBox {
+      position: fixed;
+      left: 50%;
+      bottom: 96px;
+      transform: translateX(-50%);
+      max-width: 420px;
+      width: calc(100% - 32px);
+      background: #111;
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 12px;
+      z-index: 10000;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    #modalMask {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .35);
+      z-index: 10001;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 420px;
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    #modalText {
+      white-space: pre-line;
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
   </style>
 </head>
 
@@ -208,15 +256,15 @@
           <select id="creatorSelect" onchange="handleCreatorChange()"></select>
         </div>
 
-<div class="field">
-  <label>付款方式</label>
-  <select id="paymentSelect" onchange="handlePaymentChange()"></select>
-</div>
+        <div class="field">
+          <label>付款方式</label>
+          <select id="paymentSelect" onchange="handlePaymentChange()"></select>
+        </div>
 
-<div class="field" id="accountField">
-  <label>收款帳號</label>
-  <input id="accountInput" placeholder="ex：288816666682">
-</div>
+        <div class="field" id="accountField">
+          <label>收款帳號</label>
+          <input id="accountInput" placeholder="ex：288816666682">
+        </div>
 
         <div class="field">
           <label>分帳人</label>
@@ -254,7 +302,7 @@
         收款人：<b id="detailCreator"></b><br>
         <span id="detailTime" class="muted"></span><br>
         帳號：<b id="detailAccount"></b>
-     <button id="copyBtn" class="btn btn-light" onclick="copyAccount()">複製</button>
+        <button id="copyBtn" class="btn btn-light" onclick="copyAccount()">複製</button>
       </div>
 
       <div id="splitsBox"></div>
@@ -262,12 +310,12 @@
 
   </div>
 
-<div class="bottom" id="bottomBar" style="display:none;">
-  <div>未收：<span id="unpaidAmount">0</span></div>
-  <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="openCollectMenu()">
-    催款 / 分享
-  </button>
-</div>
+  <div class="bottom" id="bottomBar" style="display:none;">
+    <div>未收：<span id="unpaidAmount">0</span></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="openCollectMenu()">
+      催款 / 分享
+    </button>
+  </div>
 
   <div id="loadingMask">
     <div class="loading-box">處理中...</div>
@@ -281,48 +329,48 @@
     let current = null;
     let members = [];
     let apiRunning = false;
-const PAYMENT_METHODS = [
-  { label: '臺灣(004)', bank: '臺灣', code: '004', needAccount: true },
-  { label: '土地(005)', bank: '土地', code: '005', needAccount: true },
-  { label: '合庫(006)', bank: '合庫', code: '006', needAccount: true },
-  { label: '第一(007)', bank: '第一', code: '007', needAccount: true },
-  { label: '華南(008)', bank: '華南', code: '008', needAccount: true },
-  { label: '彰化(009)', bank: '彰化', code: '009', needAccount: true },
-  { label: '上海(011)', bank: '上海', code: '011', needAccount: true },
-  { label: '台北富邦(012)', bank: '台北富邦', code: '012', needAccount: true },
-  { label: '國泰世華(013)', bank: '國泰世華', code: '013', needAccount: true },
-  { label: '高雄(016)', bank: '高雄', code: '016', needAccount: true },
-  { label: '兆豐(017)', bank: '兆豐', code: '017', needAccount: true },
-  { label: '王道(048)', bank: '王道', code: '048', needAccount: true },
-  { label: '臺企銀(050)', bank: '臺企銀', code: '050', needAccount: true },
-  { label: '渣打(052)', bank: '渣打', code: '052', needAccount: true },
-  { label: '台中(053)', bank: '台中', code: '053', needAccount: true },
-  { label: '京城(054)', bank: '京城', code: '054', needAccount: true },
-  { label: '匯豐(081)', bank: '匯豐', code: '081', needAccount: true },
-  { label: '瑞興(101)', bank: '瑞興', code: '101', needAccount: true },
-  { label: '華泰(102)', bank: '華泰', code: '102', needAccount: true },
-  { label: '新光(103)', bank: '新光', code: '103', needAccount: true },
-  { label: '陽信(108)', bank: '陽信', code: '108', needAccount: true },
-  { label: '板信(118)', bank: '板信', code: '118', needAccount: true },
-  { label: '三信(147)', bank: '三信', code: '147', needAccount: true },
-  { label: '中華郵政(700)', bank: '中華郵政', code: '700', needAccount: true },
-  { label: '聯邦(803)', bank: '聯邦', code: '803', needAccount: true },
-  { label: '遠東(805)', bank: '遠東', code: '805', needAccount: true },
-  { label: '元大(806)', bank: '元大', code: '806', needAccount: true },
-  { label: '永豐(807)', bank: '永豐', code: '807', needAccount: true },
-  { label: '玉山(808)', bank: '玉山', code: '808', needAccount: true },
-  { label: '凱基(809)', bank: '凱基', code: '809', needAccount: true },
-  { label: '星展(810)', bank: '星展', code: '810', needAccount: true },
-  { label: '台新(812)', bank: '台新', code: '812', needAccount: true },
-  { label: '日盛(815)', bank: '日盛', code: '815', needAccount: true },
-  { label: '安泰(816)', bank: '安泰', code: '816', needAccount: true },
-  { label: '中國信託(822)', bank: '中國信託', code: '822', needAccount: true },
-  { label: '將來(823)', bank: '將來', code: '823', needAccount: true },
-  { label: '連線(824)', bank: '連線', code: '824', needAccount: true },
-  { label: '樂天(826)', bank: '樂天', code: '826', needAccount: true },
-  { label: 'LinePay', bank: 'LinePay', code: '', needAccount: false },
-  { label: '現金', bank: '現金', code: '', needAccount: false }
-];
+    const PAYMENT_METHODS = [
+      { label: '臺灣(004)', bank: '臺灣', code: '004', needAccount: true },
+      { label: '土地(005)', bank: '土地', code: '005', needAccount: true },
+      { label: '合庫(006)', bank: '合庫', code: '006', needAccount: true },
+      { label: '第一(007)', bank: '第一', code: '007', needAccount: true },
+      { label: '華南(008)', bank: '華南', code: '008', needAccount: true },
+      { label: '彰化(009)', bank: '彰化', code: '009', needAccount: true },
+      { label: '上海(011)', bank: '上海', code: '011', needAccount: true },
+      { label: '台北富邦(012)', bank: '台北富邦', code: '012', needAccount: true },
+      { label: '國泰世華(013)', bank: '國泰世華', code: '013', needAccount: true },
+      { label: '高雄(016)', bank: '高雄', code: '016', needAccount: true },
+      { label: '兆豐(017)', bank: '兆豐', code: '017', needAccount: true },
+      { label: '王道(048)', bank: '王道', code: '048', needAccount: true },
+      { label: '臺企銀(050)', bank: '臺企銀', code: '050', needAccount: true },
+      { label: '渣打(052)', bank: '渣打', code: '052', needAccount: true },
+      { label: '台中(053)', bank: '台中', code: '053', needAccount: true },
+      { label: '京城(054)', bank: '京城', code: '054', needAccount: true },
+      { label: '匯豐(081)', bank: '匯豐', code: '081', needAccount: true },
+      { label: '瑞興(101)', bank: '瑞興', code: '101', needAccount: true },
+      { label: '華泰(102)', bank: '華泰', code: '102', needAccount: true },
+      { label: '新光(103)', bank: '新光', code: '103', needAccount: true },
+      { label: '陽信(108)', bank: '陽信', code: '108', needAccount: true },
+      { label: '板信(118)', bank: '板信', code: '118', needAccount: true },
+      { label: '三信(147)', bank: '三信', code: '147', needAccount: true },
+      { label: '中華郵政(700)', bank: '中華郵政', code: '700', needAccount: true },
+      { label: '聯邦(803)', bank: '聯邦', code: '803', needAccount: true },
+      { label: '遠東(805)', bank: '遠東', code: '805', needAccount: true },
+      { label: '元大(806)', bank: '元大', code: '806', needAccount: true },
+      { label: '永豐(807)', bank: '永豐', code: '807', needAccount: true },
+      { label: '玉山(808)', bank: '玉山', code: '808', needAccount: true },
+      { label: '凱基(809)', bank: '凱基', code: '809', needAccount: true },
+      { label: '星展(810)', bank: '星展', code: '810', needAccount: true },
+      { label: '台新(812)', bank: '台新', code: '812', needAccount: true },
+      { label: '日盛(815)', bank: '日盛', code: '815', needAccount: true },
+      { label: '安泰(816)', bank: '安泰', code: '816', needAccount: true },
+      { label: '中國信託(822)', bank: '中國信託', code: '822', needAccount: true },
+      { label: '將來(823)', bank: '將來', code: '823', needAccount: true },
+      { label: '連線(824)', bank: '連線', code: '824', needAccount: true },
+      { label: '樂天(826)', bank: '樂天', code: '826', needAccount: true },
+      { label: 'LinePay', bank: 'LinePay', code: '', needAccount: false },
+      { label: '現金', bank: '現金', code: '', needAccount: false }
+    ];
     /* ================= API ================= */
 
     async function api(action, payload = {}) {
@@ -377,52 +425,37 @@ const PAYMENT_METHODS = [
         USERS.forEach((u, i) => {
           creatorSelect.add(new Option(u.name, i));
         });
-initPaymentSelect();
+        initPaymentSelect();
         updateAccountDisplay();
         renderCreateMemberSelect();
         showList(false);
 
       } catch (err) {
-        alert(err.message);
+        showMessage(err.message);
       }
     }
-function openCollectMenu() {
-  if (!current) return;
+    async function openCollectMenu() {
+      shareReminder();
+    }
+    function buildReminderText() {
+      if (!current) return '';
 
-  const choice = prompt(
-`請選擇操作：
-1：分享催款訊息
-2：複製催款訊息
-3：只複製帳號`
-  );
+      const unpaid = current.splits.filter(s => !s.paid);
 
-  if (choice === '1') {
-    shareReminder();
-  } else if (choice === '2') {
-    copyReminderText();
-  } else if (choice === '3') {
-    copyAccount();
-  }
-}
-function buildReminderText() {
-  if (!current) return '';
+      const unpaidText = unpaid.length
+        ? unpaid
+          .map(s => `✨ ${s.name} $${Number(s.amount || 0).toLocaleString()}`)
+          .join('\n')
+        : '🎉 大家都付完了，好讚！';
 
-  const unpaid = current.splits.filter(s => !s.paid);
+      const payInfo = current.account
+        ? `${current.bank} ${current.account}`
+        : current.bank;
 
-  const unpaidText = unpaid.length
-    ? unpaid
-        .map(s => `✨ ${s.name} $${Number(s.amount || 0).toLocaleString()}`)
-        .join('\n')
-    : '🎉 大家都付完了，好讚！';
+      const total = Number(current.total || 0).toLocaleString();
+      const pageUrl = window.location.href;
 
-  const payInfo = current.account
-    ? `${current.bank} ${current.account}`
-    : current.bank;
-
-  const total = Number(current.total || 0).toLocaleString();
-  const pageUrl = window.location.href;
-
-  return `我來收帳啦😆
+      return `我來收帳啦😆
 
 ✨ ${current.title}
 總共 $${total}
@@ -434,35 +467,35 @@ ${payInfo}
 轉完幫我點一下已付🙌
 ${pageUrl}
 謝啦大家～🫶`;
-}
-
-async function shareReminder() {
-  const text = buildReminderText();
-  if (!text) return;
-
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: current.title,
-        text
-      });
-      return;
-    } catch (err) {
-      if (err.name === 'AbortError') return;
     }
-  }
 
-  copyReminderText();
-}
+    async function shareReminder() {
+      const text = buildReminderText();
+      if (!text) return;
 
-function copyReminderText() {
-  const text = buildReminderText();
-  if (!text) return;
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: current.title,
+            text
+          });
+          return;
+        } catch (err) {
+          if (err.name === 'AbortError') return;
+        }
+      }
 
-  navigator.clipboard.writeText(text)
-    .then(() => alert('已複製催款訊息，可貼到對話框'))
-    .catch(() => alert(text));
-}
+      copyReminderText();
+    }
+
+    function copyReminderText() {
+      const text = buildReminderText();
+      if (!text) return;
+
+      navigator.clipboard.writeText(text)
+        .then(() => showToast('已複製催款訊息，可貼到對話框'))
+        .catch(() => alert(text));
+    }
     /* ================= PAGE ================= */
 
     async function showList(needRefresh) {
@@ -475,7 +508,7 @@ function copyReminderText() {
         try {
           DB = await api('GET_LIST');
         } catch (err) {
-          alert(err.message);
+          showMessage(err.message);
         }
       }
 
@@ -511,7 +544,7 @@ function copyReminderText() {
         bottomBar.style.display = 'block';
 
       } catch (err) {
-        alert(err.message);
+        showMessage(err.message);
       }
     }
     function formatDateOnly(value) {
@@ -529,21 +562,21 @@ function copyReminderText() {
 
       return d.toLocaleDateString('zh-TW');
     }
-function renderCurrentBill() {
-  detailTitle.innerText = current.title;
-  detailTotal.innerText = '$' + current.total;
-  detailCreator.innerText = current.createdBy;
-  detailTime.innerText = formatDateOnly(current.createdAt);
+    function renderCurrentBill() {
+      detailTitle.innerText = current.title;
+      detailTotal.innerText = '$' + current.total;
+      detailCreator.innerText = current.createdBy;
+      detailTime.innerText = formatDateOnly(current.createdAt);
 
-  document.getElementById('copyBtn').style.display =
-    current.account ? 'inline-block' : 'none';
+      document.getElementById('copyBtn').style.display =
+        current.account ? 'inline-block' : 'none';
 
-  detailAccount.innerText = current.account
-    ? current.bank + ' ' + current.account
-    : current.bank;
+      detailAccount.innerText = current.account
+        ? current.bank + ' ' + current.account
+        : current.bank;
 
-  renderSplits();
-}
+      renderSplits();
+    }
 
     /* ================= LIST ================= */
 
@@ -569,53 +602,53 @@ function renderCurrentBill() {
     }
 
     /* ================= CREATE - CREATOR ================= */
-function initPaymentSelect() {
-  paymentSelect.innerHTML = '';
+    function initPaymentSelect() {
+      paymentSelect.innerHTML = '';
 
-  PAYMENT_METHODS.forEach((p, i) => {
-    paymentSelect.add(new Option(p.label, i));
-  });
-}
+      PAYMENT_METHODS.forEach((p, i) => {
+        paymentSelect.add(new Option(p.label, i));
+      });
+    }
 
-function findPaymentIndexByBank(bank) {
-  const cleanBank = String(bank || '')
-    .trim()
-    .replace(/銀行/g, '')
-    .replace(/\s+/g, '')
-    .toLowerCase();
+    function findPaymentIndexByBank(bank) {
+      const cleanBank = String(bank || '')
+        .trim()
+        .replace(/銀行/g, '')
+        .replace(/\s+/g, '')
+        .toLowerCase();
 
-  let idx = PAYMENT_METHODS.findIndex(p =>
-    p.bank.replace(/\s+/g, '').toLowerCase() === cleanBank
-  );
-  if (idx >= 0) return idx;
+      let idx = PAYMENT_METHODS.findIndex(p =>
+        p.bank.replace(/\s+/g, '').toLowerCase() === cleanBank
+      );
+      if (idx >= 0) return idx;
 
-  idx = PAYMENT_METHODS.findIndex(p =>
-    p.label.replace(/\s+/g, '').toLowerCase() === cleanBank
-  );
-  if (idx >= 0) return idx;
+      idx = PAYMENT_METHODS.findIndex(p =>
+        p.label.replace(/\s+/g, '').toLowerCase() === cleanBank
+      );
+      if (idx >= 0) return idx;
 
-  idx = PAYMENT_METHODS.findIndex(p =>
-    cleanBank.includes(p.bank.replace(/\s+/g, '').toLowerCase())
-  );
-  if (idx >= 0) return idx;
+      idx = PAYMENT_METHODS.findIndex(p =>
+        cleanBank.includes(p.bank.replace(/\s+/g, '').toLowerCase())
+      );
+      if (idx >= 0) return idx;
 
-  return 0;
-}
+      return 0;
+    }
 
-function handlePaymentChange() {
-  const p = PAYMENT_METHODS[paymentSelect.value];
+    function handlePaymentChange() {
+      const p = PAYMENT_METHODS[paymentSelect.value];
 
-  if (!p.needAccount) {
-    accountField.style.display = 'none';
-    accountInput.value = '';
-  } else {
-    accountField.style.display = 'block';
-  }
-}
+      if (!p.needAccount) {
+        accountField.style.display = 'none';
+        accountInput.value = '';
+      } else {
+        accountField.style.display = 'block';
+      }
+    }
 
-function getSelectedPayment() {
-  return PAYMENT_METHODS[paymentSelect.value];
-}
+    function getSelectedPayment() {
+      return PAYMENT_METHODS[paymentSelect.value];
+    }
     function handleCreatorChange() {
       updateAccountDisplay();
 
@@ -626,22 +659,22 @@ function getSelectedPayment() {
       renderCreateMemberSelect();
     }
 
-function updateAccountDisplay() {
-  const u = USERS[creatorSelect.value];
+    function updateAccountDisplay() {
+      const u = USERS[creatorSelect.value];
 
-  const idx = findPaymentIndexByBank(u && u.bank ? u.bank : '');
-  paymentSelect.value = String(idx);
+      const idx = findPaymentIndexByBank(u && u.bank ? u.bank : '');
+      paymentSelect.value = String(idx);
 
-  const p = getSelectedPayment();
+      const p = getSelectedPayment();
 
-  if (p.needAccount) {
-    accountInput.value = u && u.account ? u.account : '';
-  } else {
-    accountInput.value = '';
-  }
+      if (p.needAccount) {
+        accountInput.value = u && u.account ? u.account : '';
+      } else {
+        accountInput.value = '';
+      }
 
-  handlePaymentChange();
-}
+      handlePaymentChange();
+    }
 
     /* ================= CREATE - MEMBER SELECT ================= */
 
@@ -747,20 +780,20 @@ function updateAccountDisplay() {
       }
 
       const u = USERS[creatorSelect.value];
-const payment = getSelectedPayment();
-const bank = payment.bank;
-const account = payment.needAccount ? accountInput.value.trim() : '';
-const avg = Math.round(totalNum / members.length);
+      const payment = getSelectedPayment();
+      const bank = payment.bank;
+      const account = payment.needAccount ? accountInput.value.trim() : '';
+      const avg = Math.round(totalNum / members.length);
 
-if (!bank) {
-  createErr.innerText = '請選擇付款方式';
-  return;
-}
+      if (!bank) {
+        createErr.innerText = '請選擇付款方式';
+        return;
+      }
 
-if (payment.needAccount && !account) {
-  createErr.innerText = '請輸入收款帳號';
-  return;
-}
+      if (payment.needAccount && !account) {
+        createErr.innerText = '請輸入收款帳號';
+        return;
+      }
 
       try {
         const result = await api('CREATE_BILL', {
@@ -784,7 +817,7 @@ if (payment.needAccount && !account) {
             user.account = account;
           }
 
-          alert('帳戶資訊已更新，以後會使用這組新的帳戶');
+          showToast('帳戶資訊已更新，以後會使用這組新的帳戶');
         }
         renderCurrentBill();
 
@@ -929,7 +962,7 @@ if (payment.needAccount && !account) {
         renderCurrentBill();
 
       } catch (err) {
-        alert(err.message);
+        showMessage(err.message);
       }
     }
     /* ================= DETAIL - ACTIONS ================= */
@@ -948,7 +981,7 @@ if (payment.needAccount && !account) {
         renderCurrentBill();
 
       } catch (err) {
-        alert(err.message);
+        showMessage(err.message);
         await openBill(current.id);
       }
     }
@@ -966,12 +999,13 @@ if (payment.needAccount && !account) {
         renderCurrentBill();
 
       } catch (err) {
-        alert(err.message);
+        showMessage(err.message);
       }
     }
 
     async function removePerson(i) {
-      if (!confirm('刪除這個人？')) return;
+      const ok = await showConfirm('確定刪除這個人？');
+      if (!ok) return;
 
       const s = current.splits[i];
 
@@ -984,13 +1018,18 @@ if (payment.needAccount && !account) {
         renderCurrentBill();
 
       } catch (err) {
-        alert(err.message);
+        showMessage(err.message);
       }
     }
 
     async function deleteCurrentBill() {
-      if (!current) return;
-      if (!confirm('確定刪除整筆分帳？')) return;
+      if (!current) {
+        showMessage('目前沒有開啟的分帳單');
+        return;
+      }
+
+      const ok = await showConfirm('確定刪除整筆分帳？');
+      if (!ok) return;
 
       try {
         await api('DELETE_BILL', {
@@ -1001,22 +1040,22 @@ if (payment.needAccount && !account) {
         await showList(true);
 
       } catch (err) {
-        alert(err.message);
+        showMessage('刪除失敗：' + err.message);
       }
     }
 
-function copyAccount() {
-  if (!current) return;
+    function copyAccount() {
+      if (!current) return;
 
-  // 沒帳號就不允許複製
-  if (!current.account) {
-    return;
-  }
+      // 沒帳號就不允許複製
+      if (!current.account) {
+        return;
+      }
 
-  navigator.clipboard.writeText(current.account)
-    .then(() => alert('已複製帳號，可直接貼到銀行 App'))
-    .catch(() => alert(current.account));
-}
+      navigator.clipboard.writeText(current.account)
+        .then(() => showToast('已複製帳號，可直接貼到銀行 App'))
+        .catch(() => alert(current.account));
+    }
 
     /* ================= UTIL ================= */
 
@@ -1028,7 +1067,57 @@ function copyAccount() {
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
     }
+    function showToast(message) {
+      toastBox.innerText = message;
+      toastBox.style.display = 'block';
+
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => {
+        toastBox.style.display = 'none';
+      }, 1800);
+    }
+
+    function showMessage(message) {
+      return showConfirm(message, {
+        okText: '知道了',
+        cancelText: '',
+        hideCancel: true
+      });
+    }
+
+    function showConfirm(message, options = {}) {
+      return new Promise(resolve => {
+        modalText.innerText = message;
+
+        modalOkBtn.innerText = options.okText || '確定';
+        modalCancelBtn.innerText = options.cancelText || '取消';
+
+        modalCancelBtn.style.display = options.hideCancel ? 'none' : 'inline-block';
+        modalMask.style.display = 'flex';
+
+        modalOkBtn.onclick = () => {
+          modalMask.style.display = 'none';
+          resolve(true);
+        };
+
+        modalCancelBtn.onclick = () => {
+          modalMask.style.display = 'none';
+          resolve(false);
+        };
+      });
+    }
   </script>
+  <div id="toastBox" style="display:none;"></div>
+
+  <div id="modalMask" style="display:none;">
+    <div class="modal-box">
+      <div id="modalText"></div>
+      <div class="modal-actions">
+        <button class="btn btn-light" id="modalCancelBtn">取消</button>
+        <button class="btn btn-primary" id="modalOkBtn">確定</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
