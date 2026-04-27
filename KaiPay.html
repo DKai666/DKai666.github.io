@@ -397,7 +397,7 @@
 
       if (isWrite && writeRunning) {
         showToast('資料儲存中，請稍候');
-        throw new Error('處理中');
+        return Promise.reject({ silent: true });
       }
 
       if (isWrite) writeRunning = true;
@@ -516,7 +516,7 @@ ${pageUrl}
 
     function copyReminderText() {
       const text = buildReminderText();
-      if (!current || !current.account) return;
+      if (!text) return;
 
       navigator.clipboard.writeText(text)
         .then(() => showToast('已複製催款訊息，可貼到對話框'))
@@ -855,6 +855,7 @@ ${pageUrl}
         bottomBar.style.display = 'block';
 
       } catch (err) {
+        if (isSilentError(err)) return;
         createErr.innerText = err.message;
       }
     }
@@ -990,6 +991,7 @@ ${pageUrl}
         renderCurrentBill();
 
       } catch (err) {
+        if (isSilentError(err)) return;
         showMessage(err.message);
       }
     }
@@ -1009,6 +1011,7 @@ ${pageUrl}
         renderCurrentBill();
 
       } catch (err) {
+        if (isSilentError(err)) return;
         showMessage(err.message);
         await openBill(current.id);
       }
@@ -1033,6 +1036,9 @@ ${pageUrl}
       } catch (err) {
         s.paid = oldPaid;
         renderCurrentBill();
+
+        if (isSilentError(err)) return;
+
         showMessage(err.message);
       }
     }
@@ -1052,6 +1058,7 @@ ${pageUrl}
         renderCurrentBill();
 
       } catch (err) {
+        if (isSilentError(err)) return;
         showMessage(err.message);
       }
     }
@@ -1074,6 +1081,7 @@ ${pageUrl}
         await showList(true);
 
       } catch (err) {
+        if (isSilentError(err)) return;
         showMessage('刪除失敗：' + err.message);
       }
     }
@@ -1094,6 +1102,9 @@ ${pageUrl}
         .replaceAll('>', '&gt;')
         .replaceAll('"', '&quot;')
         .replaceAll("'", '&#039;');
+    }
+    function isSilentError(err) {
+      return err && err.silent;
     }
     function showToast(message) {
       toastBox.innerText = message;
