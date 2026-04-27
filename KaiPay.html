@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -141,7 +142,7 @@
       max-width: 480px;
       background: #fff;
       padding: 12px 16px;
-      box-shadow: 0 -2px 10px rgba(0,0,0,.08);
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, .08);
       font-weight: 700;
     }
 
@@ -153,27 +154,42 @@
     h2 {
       margin: 0 0 12px;
     }
+
+    #loadingMask {
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, .72);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-box {
+      background: #111;
+      color: white;
+      padding: 14px 22px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
   </style>
 </head>
 
 <body>
   <div class="app">
 
-    <!-- ================= LIST PAGE ================= -->
     <div id="listPage">
       <div class="header-row">
         <h2>分帳</h2>
         <button class="btn btn-primary" onclick="goCreate()">＋新增</button>
       </div>
-
       <div id="list"></div>
     </div>
 
-    <!-- ================= CREATE PAGE ================= -->
     <div id="createPage" style="display:none;">
       <div class="header-row">
         <h2>新增</h2>
-        <button class="btn btn-light" onclick="showList()">返回</button>
+        <button class="btn btn-light" onclick="showList(true)">返回</button>
       </div>
 
       <div class="card">
@@ -193,13 +209,17 @@
         </div>
 
         <div class="field">
+          <label>銀行 / 付款方式</label>
+          <input id="bankInput" placeholder="ex：台新銀行">
+        </div>
+
+        <div class="field">
           <label>收款帳號</label>
-          <input id="accountDisplay" disabled>
+          <input id="accountInput" placeholder="ex：288816666682">
         </div>
 
         <div class="field">
           <label>分帳人</label>
-
           <div class="row">
             <select id="memberSelect" onchange="handleMemberSelect()"></select>
             <button class="btn btn-primary" type="button" onclick="addMember()">＋</button>
@@ -218,14 +238,12 @@
       </div>
     </div>
 
-    <!-- ================= DETAIL PAGE ================= -->
     <div id="detailPage" style="display:none;">
       <div class="header-row">
         <h2 id="detailTitle"></h2>
+        <button class="btn btn-light" onclick="showList(true)">返回</button>
         <button class="btn btn-danger" onclick="deleteCurrentBill()">刪除整單</button>
       </div>
-
-      <button class="btn btn-light" onclick="showList()">返回</button>
 
       <div class="card" style="margin-top:12px;">
         總金額：<b id="detailTotal"></b>
@@ -233,7 +251,7 @@
       </div>
 
       <div class="card">
-        建立人：<b id="detailCreator"></b><br>
+        收款人：<b id="detailCreator"></b><br>
         <span id="detailTime" class="muted"></span><br>
         帳號：<b id="detailAccount"></b>
         <button class="btn btn-light" onclick="copyAccount()">複製</button>
@@ -244,46 +262,102 @@
 
   </div>
 
-  <!-- ================= BOTTOM BAR ================= -->
   <div class="bottom" id="bottomBar" style="display:none;">
     未收：<span id="unpaidAmount">0</span>
   </div>
 
+  <div id="loadingMask">
+    <div class="loading-box">處理中...</div>
+  </div>
+
   <script>
-    /* ================= DATA ================= */
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyunKl7L6VSsWEmzduEnLVvyIbLcA5omca5Ne2HzDVaN3oFWztWhlBQmSStW7zp_uSuVw/exec';
 
-    const USERS = [
-      { name: 'user1', bank: '台新銀行', account: '288816666682' },
-      { name: 'user2', bank: 'LINE Pay', account: 'amy123' },
-      { name: 'user3', bank: '玉山銀行', account: '998847799696' },
-      { name: '自訂' }
-    ];
-
+    let USERS = [];
     let DB = [];
     let current = null;
     let members = [];
+    let apiRunning = false;
+
+    /* ================= API ================= */
+
+    async function api(action, payload = {}) {
+      if (apiRunning) throw new Error('處理中');
+
+      apiRunning = true;
+      showLoading();
+
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8'
+          },
+          body: JSON.stringify({ action, ...payload })
+        });
+
+        const json = await res.json();
+
+        if (!json.success) {
+          throw new Error(json.message || 'API error');
+        }
+
+        return json.data;
+
+      } finally {
+        apiRunning = false;
+        hideLoading();
+      }
+    }
+
+    function showLoading() {
+      loadingMask.style.display = 'flex';
+    }
+
+    function hideLoading() {
+      loadingMask.style.display = 'none';
+    }
 
     /* ================= INIT ================= */
 
     init();
 
-    function init() {
-      USERS.forEach((u, i) => {
-        creatorSelect.add(new Option(u.name, i));
-      });
+    async function init() {
+      try {
+        const data = await api('INIT_DATA');
 
-      updateAccountDisplay();
-      renderCreateMemberSelect();
-      showList();
+        USERS = data.accounts || [];
+        DB = data.bills || [];
+
+        creatorSelect.innerHTML = '';
+        USERS.forEach((u, i) => {
+          creatorSelect.add(new Option(u.name, i));
+        });
+
+        updateAccountDisplay();
+        renderCreateMemberSelect();
+        showList(false);
+
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
     /* ================= PAGE ================= */
 
-    function showList() {
+    async function showList(needRefresh) {
       listPage.style.display = 'block';
       createPage.style.display = 'none';
       detailPage.style.display = 'none';
       bottomBar.style.display = 'none';
+
+      if (needRefresh) {
+        try {
+          DB = await api('GET_LIST');
+        } catch (err) {
+          alert(err.message);
+        }
+      }
 
       renderBillList();
     }
@@ -296,7 +370,7 @@
       createErr.innerText = '';
       customNameInput.value = '';
       customNameBox.style.display = 'none';
-
+      updateAccountDisplay();
       renderMembers();
       renderCreateMemberSelect();
 
@@ -306,22 +380,42 @@
       bottomBar.style.display = 'none';
     }
 
-    function openBill(id) {
-      current = DB.find(x => x.id === id);
-      if (!current) return;
+    async function openBill(id) {
+      try {
+        current = await api('GET_BILL', { billId: id });
+        renderCurrentBill();
 
+        listPage.style.display = 'none';
+        createPage.style.display = 'none';
+        detailPage.style.display = 'block';
+        bottomBar.style.display = 'block';
+
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+    function formatDateOnly(value) {
+      if (!value) return '';
+
+      const text = String(value);
+
+      // GAS 回 yyyy-MM-dd HH:mm:ss 時，直接取前 10 碼最穩
+      if (/^\d{4}-\d{2}-\d{2}/.test(text)) {
+        return text.slice(0, 10);
+      }
+
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return text;
+
+      return d.toLocaleDateString('zh-TW');
+    }
+    function renderCurrentBill() {
       detailTitle.innerText = current.title;
       detailTotal.innerText = '$' + current.total;
       detailCreator.innerText = current.createdBy;
-      detailTime.innerText = new Date(current.createdAt).toLocaleDateString('zh-TW');
+      detailTime.innerText = formatDateOnly(current.createdAt);
       detailAccount.innerText = current.bank + ' ' + current.account;
-
       renderSplits();
-
-      listPage.style.display = 'none';
-      createPage.style.display = 'none';
-      detailPage.style.display = 'block';
-      bottomBar.style.display = 'block';
     }
 
     /* ================= LIST ================= */
@@ -329,23 +423,20 @@
     function renderBillList() {
       list.innerHTML = '';
 
-      if (DB.length === 0) {
+      if (!DB || DB.length === 0) {
         list.innerHTML = '<div class="card muted"></div>';
         return;
       }
 
       DB.forEach(b => {
-        const allPaid = b.splits.length > 0 && b.splits.every(s => s.paid);
-
         const div = document.createElement('div');
-        div.className = 'card' + (allPaid ? ' done' : '');
+        div.className = 'card' + (b.allPaid ? ' done' : '');
         div.innerHTML = `
           <div style="font-weight:700">${escapeHtml(b.title)}</div>
           <div>$${b.total}</div>
           <div class="muted">建立人：${escapeHtml(b.createdBy)}</div>
         `;
         div.onclick = () => openBill(b.id);
-
         list.appendChild(div);
       });
     }
@@ -364,7 +455,8 @@
 
     function updateAccountDisplay() {
       const u = USERS[creatorSelect.value];
-      accountDisplay.value = u.bank ? u.bank + ' ' + u.account : '';
+      bankInput.value = u && u.bank ? u.bank : '';
+      accountInput.value = u && u.account ? u.account : '';
     }
 
     /* ================= CREATE - MEMBER SELECT ================= */
@@ -374,45 +466,45 @@
 
       USERS.forEach((u, i) => {
         if (u.name === USERS[creatorSelect.value].name) return;
-        if (members.includes(u.name) && u.name !== '自訂') return;
+        if (members.includes(u.name)) return;
 
         const opt = new Option(u.name, i);
         opt.dataset.index = i;
         memberSelect.add(opt);
       });
 
+      const customOpt = new Option('自訂', 'custom');
+      customOpt.dataset.index = 'custom';
+      memberSelect.add(customOpt);
+
       handleMemberSelect();
     }
 
     function handleMemberSelect() {
       const opt = memberSelect.options[memberSelect.selectedIndex];
+
       if (!opt) {
         customNameBox.style.display = 'none';
         return;
       }
 
-      const idx = opt.dataset.index;
-
-      if (USERS[idx].name === '自訂') {
-        customNameBox.style.display = 'block';
-      } else {
-        customNameBox.style.display = 'none';
-      }
+      customNameBox.style.display =
+        opt.dataset.index === 'custom' ? 'block' : 'none';
     }
 
     function addMember() {
       const opt = memberSelect.options[memberSelect.selectedIndex];
       if (!opt) return;
 
-      const idx = opt.dataset.index;
-      const u = USERS[idx];
+      let name;
 
-      let name = u.name;
-
-      if (name === '自訂') {
+      if (opt.dataset.index === 'custom') {
         name = customNameInput.value.trim();
         if (!name) return;
         customNameInput.value = '';
+      } else {
+        const u = USERS[opt.dataset.index];
+        name = u.name;
       }
 
       const creatorName = USERS[creatorSelect.value].name;
@@ -421,7 +513,6 @@
       if (members.includes(name)) return;
 
       members.push(name);
-
       renderMembers();
       renderCreateMemberSelect();
     }
@@ -445,37 +536,81 @@
 
     /* ================= CREATE BILL ================= */
 
-    function createBill() {
+    async function createBill() {
       const t = titleInput.value.trim();
       const totalNum = Number(totalInput.value);
 
       createErr.innerText = '';
 
-      if (!t || !totalNum || members.length < 1) {
-        createErr.innerText = '資料不完整';
+      if (!t) {
+        createErr.innerText = '請輸入標題';
+        return;
+      }
+
+      if (!totalInput.value) {
+        createErr.innerText = '請輸入總金額';
+        return;
+      }
+
+      if (isNaN(totalNum) || totalNum <= 0) {
+        createErr.innerText = '總金額必須大於 0';
+        return;
+      }
+
+      if (members.length < 1) {
+        createErr.innerText = '請至少新增 1 位分帳人';
         return;
       }
 
       const u = USERS[creatorSelect.value];
+      const bank = bankInput.value.trim();
+      const account = accountInput.value.trim();
       const avg = Math.round(totalNum / members.length);
 
-      const bill = {
-        id: Date.now() + '',
-        title: t,
-        total: totalNum,
-        createdBy: u.name,
-        bank: u.bank || '',
-        account: u.account || '',
-        createdAt: new Date(),
-        splits: members.map(n => ({
-          name: n,
-          amount: avg,
-          paid: false
-        }))
-      };
+      if (!bank) {
+        createErr.innerText = '請輸入銀行 / 付款方式';
+        return;
+      }
 
-      DB.push(bill);
-      openBill(bill.id);
+      if (!account) {
+        createErr.innerText = '請輸入收款帳號';
+        return;
+      }
+
+      try {
+        const result = await api('CREATE_BILL', {
+          title: t,
+          total: totalNum,
+          createdBy: u.name,
+          bank,
+          account,
+          splits: members.map(n => ({
+            name: n,
+            amount: avg
+          }))
+        });
+
+        current = result.bill;
+
+        if (result.accountUpdated) {
+          const user = USERS.find(x => x.name === u.name);
+          if (user) {
+            user.bank = bank;
+            user.account = account;
+          }
+
+          alert('帳戶資訊已更新，以後會使用這組新的帳戶');
+        }
+        renderCurrentBill();
+
+        listPage.style.display = 'none';
+        createPage.style.display = 'none';
+        detailPage.style.display = 'block';
+        bottomBar.style.display = 'block';
+
+      } catch (err) {
+        createErr.innerText = err.message;
+      }
     }
 
     /* ================= DETAIL - SPLITS ================= */
@@ -529,14 +664,13 @@
     function renderDetailAddMemberBox() {
       const addDiv = document.createElement('div');
       addDiv.className = 'card';
+
       addDiv.innerHTML = `
         <label>新增分帳人</label>
-
         <div class="row">
           <select id="detailMemberSelect" onchange="handleDetailMemberSelect()"></select>
           <button class="btn btn-primary" onclick="addPersonToCurrentBill()">＋</button>
         </div>
-
         <div id="detailCustomBox" style="display:none;margin-top:8px;">
           <input id="detailCustomInput" placeholder="輸入名字">
         </div>
@@ -554,12 +688,16 @@
 
       USERS.forEach((u, i) => {
         if (u.name === current.createdBy) return;
-        if (current.splits.some(s => s.name === u.name) && u.name !== '自訂') return;
+        if (current.splits.some(s => s.name === u.name)) return;
 
         const opt = new Option(u.name, i);
         opt.dataset.index = i;
         select.add(opt);
       });
+
+      const customOpt = new Option('自訂', 'custom');
+      customOpt.dataset.index = 'custom';
+      select.add(customOpt);
 
       handleDetailMemberSelect();
     }
@@ -567,85 +705,119 @@
     function handleDetailMemberSelect() {
       const select = document.getElementById('detailMemberSelect');
       const box = document.getElementById('detailCustomBox');
+
       if (!select || !box) return;
 
       const opt = select.options[select.selectedIndex];
-      if (!opt) {
-        box.style.display = 'none';
-        return;
-      }
 
-      const idx = opt.dataset.index;
-
-      if (USERS[idx].name === '自訂') {
-        box.style.display = 'block';
-      } else {
-        box.style.display = 'none';
-      }
+      box.style.display =
+        opt && opt.dataset.index === 'custom' ? 'block' : 'none';
     }
 
-    function addPersonToCurrentBill() {
+    async function addPersonToCurrentBill() {
       const select = document.getElementById('detailMemberSelect');
       if (!select) return;
 
       const opt = select.options[select.selectedIndex];
       if (!opt) return;
 
-      const idx = opt.dataset.index;
-      const u = USERS[idx];
+      let name;
 
-      let name = u.name;
-
-      if (name === '自訂') {
+      if (opt.dataset.index === 'custom') {
         const input = document.getElementById('detailCustomInput');
         name = input.value.trim();
         if (!name) return;
         input.value = '';
+      } else {
+        name = USERS[opt.dataset.index].name;
       }
 
       if (name === current.createdBy) return;
       if (current.splits.some(s => s.name === name)) return;
 
-      current.splits.push({
-        name,
-        amount: 0,
-        paid: false
-      });
+      try {
+        current = await api('ADD_MEMBER_AND_REBALANCE', {
+          billId: current.id,
+          name
+        });
 
-      const avg = Math.round(Number(current.total || 0) / current.splits.length);
-      current.splits.forEach(s => {
-        s.amount = avg;
-      });
+        renderCurrentBill();
 
-      renderSplits();
+      } catch (err) {
+        alert(err.message);
+      }
     }
-
     /* ================= DETAIL - ACTIONS ================= */
 
-    function updateAmount(i, v) {
-      current.splits[i].amount = Number(v) || 0;
-      renderSplits();
+    async function updateAmount(i, v) {
+      const s = current.splits[i];
+      const amount = Number(v) || 0;
+
+      try {
+        current = await api('UPDATE_MEMBER_AMOUNT', {
+          billId: current.id,
+          memberId: s.memberId,
+          amount
+        });
+
+        renderCurrentBill();
+
+      } catch (err) {
+        alert(err.message);
+        await openBill(current.id);
+      }
     }
 
-    function togglePaid(i) {
-      current.splits[i].paid = !current.splits[i].paid;
-      renderSplits();
+    async function togglePaid(i) {
+      const s = current.splits[i];
+
+      try {
+        current = await api('TOGGLE_MEMBER_PAID', {
+          billId: current.id,
+          memberId: s.memberId,
+          paid: !s.paid
+        });
+
+        renderCurrentBill();
+
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
-    function removePerson(i) {
+    async function removePerson(i) {
       if (!confirm('刪除這個人？')) return;
 
-      current.splits.splice(i, 1);
-      renderSplits();
+      const s = current.splits[i];
+
+      try {
+        current = await api('DELETE_MEMBER', {
+          billId: current.id,
+          memberId: s.memberId
+        });
+
+        renderCurrentBill();
+
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
-    function deleteCurrentBill() {
+    async function deleteCurrentBill() {
       if (!current) return;
       if (!confirm('確定刪除整筆分帳？')) return;
 
-      DB = DB.filter(b => b.id !== current.id);
-      current = null;
-      showList();
+      try {
+        await api('DELETE_BILL', {
+          billId: current.id
+        });
+
+        current = null;
+        await showList(true);
+
+      } catch (err) {
+        alert(err.message);
+      }
     }
 
     function copyAccount() {
@@ -668,4 +840,5 @@
     }
   </script>
 </body>
+
 </html>
