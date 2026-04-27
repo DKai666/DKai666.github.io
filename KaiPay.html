@@ -455,7 +455,10 @@ function renderCurrentBill() {
   detailTotal.innerText = '$' + current.total;
   detailCreator.innerText = current.createdBy;
   detailTime.innerText = formatDateOnly(current.createdAt);
-copyBtn.style.display = current.account ? 'inline-block' : 'none';
+
+  document.getElementById('copyBtn').style.display =
+    current.account ? 'inline-block' : 'none';
+
   detailAccount.innerText = current.account
     ? current.bank + ' ' + current.account
     : current.bank;
@@ -496,15 +499,25 @@ function initPaymentSelect() {
 }
 
 function findPaymentIndexByBank(bank) {
-  const cleanBank = String(bank || '').trim().replace(/銀行/g, '');
+  const cleanBank = String(bank || '')
+    .trim()
+    .replace(/銀行/g, '')
+    .replace(/\s+/g, '')
+    .toLowerCase();
 
-  let idx = PAYMENT_METHODS.findIndex(p => p.bank === cleanBank);
+  let idx = PAYMENT_METHODS.findIndex(p =>
+    p.bank.replace(/\s+/g, '').toLowerCase() === cleanBank
+  );
   if (idx >= 0) return idx;
 
-  idx = PAYMENT_METHODS.findIndex(p => p.label === cleanBank);
+  idx = PAYMENT_METHODS.findIndex(p =>
+    p.label.replace(/\s+/g, '').toLowerCase() === cleanBank
+  );
   if (idx >= 0) return idx;
 
-  idx = PAYMENT_METHODS.findIndex(p => cleanBank.includes(p.bank));
+  idx = PAYMENT_METHODS.findIndex(p =>
+    cleanBank.includes(p.bank.replace(/\s+/g, '').toLowerCase())
+  );
   if (idx >= 0) return idx;
 
   return 0;
