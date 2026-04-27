@@ -208,15 +208,15 @@
           <select id="creatorSelect" onchange="handleCreatorChange()"></select>
         </div>
 
-        <div class="field">
-          <label>銀行 / 付款方式</label>
-          <input id="bankInput" placeholder="ex：台新銀行">
-        </div>
+<div class="field">
+  <label>付款方式</label>
+  <select id="paymentSelect" onchange="handlePaymentChange()"></select>
+</div>
 
-        <div class="field">
-          <label>收款帳號</label>
-          <input id="accountInput" placeholder="ex：288816666682">
-        </div>
+<div class="field" id="accountField">
+  <label>收款帳號</label>
+  <input id="accountInput" placeholder="ex：288816666682">
+</div>
 
         <div class="field">
           <label>分帳人</label>
@@ -271,14 +271,55 @@
   </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyunKl7L6VSsWEmzduEnLVvyIbLcA5omca5Ne2HzDVaN3oFWztWhlBQmSStW7zp_uSuVw/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxoX5juqIqqugTMkvAzn5fjXDGV8GnauJ4qv-23jd9YfktQE56sCmu-uWgVIHc15Ohe7g/exec';
 
     let USERS = [];
     let DB = [];
     let current = null;
     let members = [];
     let apiRunning = false;
-
+const PAYMENT_METHODS = [
+  { label: '臺灣(004)', bank: '臺灣', code: '004', needAccount: true },
+  { label: '土地(005)', bank: '土地', code: '005', needAccount: true },
+  { label: '合庫(006)', bank: '合庫', code: '006', needAccount: true },
+  { label: '第一(007)', bank: '第一', code: '007', needAccount: true },
+  { label: '華南(008)', bank: '華南', code: '008', needAccount: true },
+  { label: '彰化(009)', bank: '彰化', code: '009', needAccount: true },
+  { label: '上海(011)', bank: '上海', code: '011', needAccount: true },
+  { label: '台北富邦(012)', bank: '台北富邦', code: '012', needAccount: true },
+  { label: '國泰世華(013)', bank: '國泰世華', code: '013', needAccount: true },
+  { label: '高雄(016)', bank: '高雄', code: '016', needAccount: true },
+  { label: '兆豐(017)', bank: '兆豐', code: '017', needAccount: true },
+  { label: '王道(048)', bank: '王道', code: '048', needAccount: true },
+  { label: '臺企銀(050)', bank: '臺企銀', code: '050', needAccount: true },
+  { label: '渣打(052)', bank: '渣打', code: '052', needAccount: true },
+  { label: '台中(053)', bank: '台中', code: '053', needAccount: true },
+  { label: '京城(054)', bank: '京城', code: '054', needAccount: true },
+  { label: '匯豐(081)', bank: '匯豐', code: '081', needAccount: true },
+  { label: '瑞興(101)', bank: '瑞興', code: '101', needAccount: true },
+  { label: '華泰(102)', bank: '華泰', code: '102', needAccount: true },
+  { label: '新光(103)', bank: '新光', code: '103', needAccount: true },
+  { label: '陽信(108)', bank: '陽信', code: '108', needAccount: true },
+  { label: '板信(118)', bank: '板信', code: '118', needAccount: true },
+  { label: '三信(147)', bank: '三信', code: '147', needAccount: true },
+  { label: '中華郵政(700)', bank: '中華郵政', code: '700', needAccount: true },
+  { label: '聯邦(803)', bank: '聯邦', code: '803', needAccount: true },
+  { label: '遠東(805)', bank: '遠東', code: '805', needAccount: true },
+  { label: '元大(806)', bank: '元大', code: '806', needAccount: true },
+  { label: '永豐(807)', bank: '永豐', code: '807', needAccount: true },
+  { label: '玉山(808)', bank: '玉山', code: '808', needAccount: true },
+  { label: '凱基(809)', bank: '凱基', code: '809', needAccount: true },
+  { label: '星展(810)', bank: '星展', code: '810', needAccount: true },
+  { label: '台新(812)', bank: '台新', code: '812', needAccount: true },
+  { label: '日盛(815)', bank: '日盛', code: '815', needAccount: true },
+  { label: '安泰(816)', bank: '安泰', code: '816', needAccount: true },
+  { label: '中國信託(822)', bank: '中國信託', code: '822', needAccount: true },
+  { label: '將來(823)', bank: '將來', code: '823', needAccount: true },
+  { label: '連線(824)', bank: '連線', code: '824', needAccount: true },
+  { label: '樂天(826)', bank: '樂天', code: '826', needAccount: true },
+  { label: 'LinePay', bank: 'LinePay', code: '', needAccount: false },
+  { label: '現金', bank: '現金', code: '', needAccount: false }
+];
     /* ================= API ================= */
 
     async function api(action, payload = {}) {
@@ -333,7 +374,7 @@
         USERS.forEach((u, i) => {
           creatorSelect.add(new Option(u.name, i));
         });
-
+initPaymentSelect();
         updateAccountDisplay();
         renderCreateMemberSelect();
         showList(false);
@@ -409,14 +450,18 @@
 
       return d.toLocaleDateString('zh-TW');
     }
-    function renderCurrentBill() {
-      detailTitle.innerText = current.title;
-      detailTotal.innerText = '$' + current.total;
-      detailCreator.innerText = current.createdBy;
-      detailTime.innerText = formatDateOnly(current.createdAt);
-      detailAccount.innerText = current.bank + ' ' + current.account;
-      renderSplits();
-    }
+function renderCurrentBill() {
+  detailTitle.innerText = current.title;
+  detailTotal.innerText = '$' + current.total;
+  detailCreator.innerText = current.createdBy;
+  detailTime.innerText = formatDateOnly(current.createdAt);
+
+  detailAccount.innerText = current.account
+    ? current.bank + ' ' + current.account
+    : current.bank;
+
+  renderSplits();
+}
 
     /* ================= LIST ================= */
 
@@ -442,7 +487,43 @@
     }
 
     /* ================= CREATE - CREATOR ================= */
+function initPaymentSelect() {
+  paymentSelect.innerHTML = '';
 
+  PAYMENT_METHODS.forEach((p, i) => {
+    paymentSelect.add(new Option(p.label, i));
+  });
+}
+
+function findPaymentIndexByBank(bank) {
+  const cleanBank = String(bank || '').trim().replace(/銀行/g, '');
+
+  let idx = PAYMENT_METHODS.findIndex(p => p.bank === cleanBank);
+  if (idx >= 0) return idx;
+
+  idx = PAYMENT_METHODS.findIndex(p => p.label === cleanBank);
+  if (idx >= 0) return idx;
+
+  idx = PAYMENT_METHODS.findIndex(p => cleanBank.includes(p.bank));
+  if (idx >= 0) return idx;
+
+  return 0;
+}
+
+function handlePaymentChange() {
+  const p = PAYMENT_METHODS[paymentSelect.value];
+
+  if (!p.needAccount) {
+    accountField.style.display = 'none';
+    accountInput.value = '';
+  } else {
+    accountField.style.display = 'block';
+  }
+}
+
+function getSelectedPayment() {
+  return PAYMENT_METHODS[paymentSelect.value];
+}
     function handleCreatorChange() {
       updateAccountDisplay();
 
@@ -453,11 +534,22 @@
       renderCreateMemberSelect();
     }
 
-    function updateAccountDisplay() {
-      const u = USERS[creatorSelect.value];
-      bankInput.value = u && u.bank ? u.bank : '';
-      accountInput.value = u && u.account ? u.account : '';
-    }
+function updateAccountDisplay() {
+  const u = USERS[creatorSelect.value];
+
+  const idx = findPaymentIndexByBank(u && u.bank ? u.bank : '');
+  paymentSelect.value = String(idx);
+
+  const p = getSelectedPayment();
+
+  if (p.needAccount) {
+    accountInput.value = u && u.account ? u.account : '';
+  } else {
+    accountInput.value = '';
+  }
+
+  handlePaymentChange();
+}
 
     /* ================= CREATE - MEMBER SELECT ================= */
 
@@ -563,19 +655,20 @@
       }
 
       const u = USERS[creatorSelect.value];
-      const bank = bankInput.value.trim();
-      const account = accountInput.value.trim();
-      const avg = Math.round(totalNum / members.length);
+const payment = getSelectedPayment();
+const bank = payment.bank;
+const account = payment.needAccount ? accountInput.value.trim() : '';
+const avg = Math.round(totalNum / members.length);
 
-      if (!bank) {
-        createErr.innerText = '請輸入銀行 / 付款方式';
-        return;
-      }
+if (!bank) {
+  createErr.innerText = '請選擇付款方式';
+  return;
+}
 
-      if (!account) {
-        createErr.innerText = '請輸入收款帳號';
-        return;
-      }
+if (payment.needAccount && !account) {
+  createErr.innerText = '請輸入收款帳號';
+  return;
+}
 
       try {
         const result = await api('CREATE_BILL', {
@@ -820,13 +913,16 @@
       }
     }
 
-    function copyAccount() {
-      if (!current || !current.account) return;
+function copyAccount() {
+  if (!current) return;
 
-      navigator.clipboard.writeText(current.account)
-        .then(() => alert('已複製'))
-        .catch(() => alert(current.account));
-    }
+  const text = current.account || current.bank || '';
+  if (!text) return;
+
+  navigator.clipboard.writeText(text)
+    .then(() => alert('已複製'))
+    .catch(() => alert(text));
+}
 
     /* ================= UTIL ================= */
 
