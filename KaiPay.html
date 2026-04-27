@@ -439,6 +439,8 @@
     init();
 
     async function init() {
+      list.innerHTML = '<div class="card muted">資料讀取中...</div>';
+
       try {
         const data = await api('INIT_DATA');
 
@@ -449,12 +451,14 @@
         USERS.forEach((u, i) => {
           creatorSelect.add(new Option(u.name, i));
         });
+
         initPaymentSelect();
         updateAccountDisplay();
         renderCreateMemberSelect();
         showList(false);
 
       } catch (err) {
+        list.innerHTML = '<div class="card hint">讀取失敗，請重新整理</div>';
         showMessage(err.message);
       }
     }
@@ -562,16 +566,28 @@ ${pageUrl}
 
     async function openBill(id) {
       try {
-        current = await api('GET_BILL', { billId: id });
-        renderCurrentBill();
+        current = null;
 
         listPage.style.display = 'none';
         createPage.style.display = 'none';
         detailPage.style.display = 'block';
+        bottomBar.style.display = 'none';
+
+        detailTitle.innerText = '讀取中...';
+        detailTotal.innerText = '';
+        detailCreator.innerText = '';
+        detailTime.innerText = '';
+        detailAccount.innerText = '';
+        splitsBox.innerHTML = '<div class="card muted">明細讀取中...</div>';
+
+        current = await api('GET_BILL', { billId: id });
+        renderCurrentBill();
+
         bottomBar.style.display = 'block';
 
       } catch (err) {
         showMessage(err.message);
+        showList(false);
       }
     }
 
