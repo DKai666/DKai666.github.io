@@ -254,7 +254,7 @@
         收款人：<b id="detailCreator"></b><br>
         <span id="detailTime" class="muted"></span><br>
         帳號：<b id="detailAccount"></b>
-        <button class="btn btn-light" onclick="copyAccount()">複製</button>
+     <button id="copyBtn" class="btn btn-light" onclick="copyAccount()">複製</button>
       </div>
 
       <div id="splitsBox"></div>
@@ -455,7 +455,7 @@ function renderCurrentBill() {
   detailTotal.innerText = '$' + current.total;
   detailCreator.innerText = current.createdBy;
   detailTime.innerText = formatDateOnly(current.createdAt);
-
+copyBtn.style.display = current.account ? 'inline-block' : 'none';
   detailAccount.innerText = current.account
     ? current.bank + ' ' + current.account
     : current.bank;
@@ -916,12 +916,14 @@ if (payment.needAccount && !account) {
 function copyAccount() {
   if (!current) return;
 
-  const text = current.account || current.bank || '';
-  if (!text) return;
+  // 沒帳號就不允許複製
+  if (!current.account) {
+    return;
+  }
 
-  navigator.clipboard.writeText(text)
-    .then(() => alert('已複製'))
-    .catch(() => alert(text));
+  navigator.clipboard.writeText(current.account)
+    .then(() => alert('已複製帳號，可直接貼到銀行 App'))
+    .catch(() => alert(current.account));
 }
 
     /* ================= UTIL ================= */
