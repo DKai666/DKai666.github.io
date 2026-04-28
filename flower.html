@@ -472,29 +472,36 @@
     .areaStats {
       margin-top: 12px
     }
-.noticeBar{
-  background:#fff7ed;
-  border:1px solid #fed7aa;
-  color:#9a3412;
-  border-radius:16px;
-  padding:10px 14px;
-  margin-bottom:12px;
-  cursor:pointer;
-  overflow:hidden;
-  white-space:nowrap;
-}
 
-.noticeTrack{
-  display:inline-block;
-  padding-left:100%;
-  animation:marquee 18s linear infinite;
-  font-weight:900;
-}
+    .noticeBar {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+      border-radius: 16px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      overflow: hidden;
+      white-space: nowrap;
+    }
 
-@keyframes marquee{
-  from{transform:translateX(0)}
-  to{transform:translateX(-100%)}
-}
+    .noticeTrack {
+      display: inline-block;
+      padding-left: 100%;
+      animation: marquee 18s linear infinite;
+      font-weight: 900;
+    }
+
+    @keyframes marquee {
+      from {
+        transform: translateX(0)
+      }
+
+      to {
+        transform: translateX(-100%)
+      }
+    }
+
     @media(max-width:900px) {
       .statsGrid {
         grid-template-columns: 1fr
@@ -600,17 +607,16 @@
     <div class="top">
       <div>
         <h1>拜拜花</h1>
-        <div class="sub">所有單直接顯示在首頁；搜尋、篩選、新增、修改、列印都在同一頁完成。</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="blue" onclick="openDrawer('add')">＋ 新增客戶</button>
-        <button class="light" onclick="window.print()">列印目前清單</button>
-        <button class="light" onclick="exportCsv()">匯出 CSV</button>
+        <button class="light" onclick="window.print()" style="display:none">列印目前清單</button>
+        <button class="light" onclick="exportCsv()" style="display:none">匯出 CSV</button>
       </div>
     </div>
-<div class="noticeBar" onclick="editNotice()">
-  <span id="noticeText" class="noticeTrack">可以的話拜拜花要拍照</span>
-</div>
+    <div class="noticeBar" onclick="editNotice()">
+      <span id="noticeText" class="noticeTrack">可以的話拜拜花要拍照</span>
+    </div>
     <section class="panel">
       <div id="statsArea"></div>
     </section>
@@ -651,8 +657,8 @@
             <th>地區</th>
             <th>卡片下款</th>
             <th>花量</th>
-<th>卡片</th>
-<th>海綿</th>
+            <th>卡片</th>
+            <th>海綿</th>
             <th>規則</th>
             <th>最後一次 / 到期</th>
             <th>注意事項</th>
@@ -796,14 +802,14 @@
         return true;
       }).sort((x, y) => String(x.area).localeCompare(String(y.area), 'zh-Hant') || String(x.name).localeCompare(String(y.name), 'zh-Hant'));
     }
-    function editNotice(){
-  const current = $('noticeText').textContent.replace(/^公告：/, '');
-  const text = prompt('請輸入公告內容', current);
+    function editNotice() {
+      const current = $('noticeText').textContent.replace(/^公告：/, '');
+      const text = prompt('請輸入公告內容', current);
 
-  if(text === null) return;
+      if (text === null) return;
 
-  $('noticeText').textContent =(text.trim() || '');
-}
+      $('noticeText').textContent = (text.trim() || '');
+    }
     function render() {
       const rows = filteredOrders();
       renderStats();
@@ -1027,7 +1033,7 @@
       } else {
         const o = orders.find(x => x.id === id);
         $('drawerTitle').textContent = '修改客戶';
-        $('drawerHint').textContent = '這是原型，修改會先更新畫面資料。正式版會寫回 Google 試算表。';
+        $('drawerHint').textContent = '測試';
         $('editId').value = o.id; $('fName').value = o.name || ''; $('fArea').value = o.area || ''; $('fCard').value = o.card || ''; $('fNote').value = o.note || '';
         $('fQty').value = o.qty || 1; $('fCards').value = o.cards || 0; $('fTimes').value = o.times || 12; $('fStart').value = o.startDate || '2026-05-01'; $('fCycle').value = ['初一初十五', '初一', '初二', '初十五'].includes(o.cycle) ? o.cycle : '初一初十五'; $('fSponge').value = o.sponge || '1/2 海綿';
         document.querySelector(`input[name="unit"][value="${o.unit || '盆'}"]`).checked = true;
