@@ -254,6 +254,11 @@
       white-space: pre-line
     }
 
+    td.sponge {
+      min-width: 100px;
+      white-space: nowrap;
+    }
+
     td.note {
       min-width: 220px;
       white-space: pre-line
@@ -683,7 +688,7 @@
     <div class="form">
       <input type="hidden" id="editId" />
       <div><label>客戶名字</label><input id="fName" placeholder="例如：王小明"></div>
-      <div><label>地區 / 宮廟</label><input id="fArea" list="areaOptions" placeholder="例如：中埔二街土地公"><datalist
+      <div><label>地區</label><input id="fArea" list="areaOptions" placeholder="例如：中埔二街土地公"><datalist
           id="areaOptions"></datalist></div>
       <div class="full"><label>卡片下款</label><textarea id="fCard" placeholder="卡片要寫的名字"></textarea></div>
       <div><label>供花單位</label>
@@ -698,7 +703,7 @@
         </select></div>
       <div><label>卡片數量</label><input id="fCards" type="number" min="0" value="1"></div>
       <div><label>供花規則</label><select id="fCycle" onchange="preview()">
-          <option value="初一初十五">農曆初一 + 初初十五都要</option>
+          <option value="初一初十五">農曆初一 + 初十五</option>
           <option value="初一">農曆初一</option>
           <option value="初二">農曆初二（加在初一總數）</option>
           <option value="初十五">農曆初十五</option>
@@ -725,7 +730,7 @@
       { id: 1, area: '中埔二街土地公', name: '單培華', card: '朱志強全家', pot: 1, pair: 0, cards: 1, note: 'LINE:朱志強', due: '2026.11.23' },
       { id: 2, area: '中埔二街土地公', name: '李若菁、李冠儒', card: '李若菁、李冠儒', pot: 1, pair: 0, cards: 1, note: '', due: '2026.10.24' },
       { id: 3, area: '中埔二街土地公', name: '永芸花藝', card: '永芸花藝', pot: 1, pair: 0, cards: 1, note: '', due: '' },
-      { id: 4, area: '中埔二街土地公', name: '雨政葡萄酒坊', card: '雨政葡萄酒坊', pot: 1, pair: 0, cards: 1, note: '月結，初一送完隔兩三天連絡收款', due: '已收款至2025.10.21' },
+      { id: 4, area: '中埔二街土地公', name: '雨政葡萄酒坊', card: '雨政葡萄酒坊', pot: 1, pair: 0, cards: 1, note: '月結，初一送完隔兩三天連絡收款  已收款至2025.10.21', due: '' },
       { id: 5, area: '中埔二街土地公', name: '宗和文理', card: '宗和文理', pot: 1, pair: 0, cards: 1, note: '初二才送', due: '2026.10.11' },
       { id: 6, area: '中埔二街土地公', name: '董鑑興', card: '歐華衛浴有限公司\n立裕衛浴材料行\n桃園市桃園區同德五街331號\nTEL:03-3023303', pot: 1, pair: 0, cards: 1, note: 'LINE:董鑑興', due: '2026.12.09' },
       { id: 7, area: '中埔二街土地公', name: '程小姐', card: '程溫淑', pot: 1, pair: 0, cards: 1, note: '', due: '2026.05.01' },
@@ -744,7 +749,7 @@
       { id: 20, area: '中埔二街土地公', name: '謝鴻恩', card: '易興玻璃工程行', pot: 1, pair: 0, cards: 1, note: '', due: '2027.02.06' },
       { id: 21, area: '中埔二街土地公', name: '郭芳秀', card: '郭芳秀', pot: 1, pair: 0, cards: 1, note: '', due: '2027.02.20' },
       { id: 22, area: '中埔二街土地公', name: '吳秀華', card: '劉榮基、吳秀華', pot: 1, pair: 0, cards: 1, note: '', due: '2027.03.22' },
-      { id: 23, area: '中埔二街土地公', name: '呂學龍(爐主)', card: '呂學龍', pot: 0, pair: 0, cards: 0, note: '$600/一對花束', due: '已收款至---4/17(農曆3月初2) 農曆3/15後不用送' },
+      { id: 23, area: '中埔二街土地公', name: '呂學龍(爐主)', card: '呂學龍', pot: 0, pair: 0, cards: 0, note: '$600/一對花束  已收款至---4/17(農曆3月初2) 農曆3/15後不用送', due: '' },
       { id: 24, area: '新埔六街土地公（外灘）', name: '勤洋資訊有限公司', card: '勤洋資訊有限公司', pot: 1, pair: 0, cards: 1, note: '提前2次通知', due: '2027.02.07', notify: '2027.01.08通知' },
       { id: 25, area: '新埔六街土地公（外灘）', name: '永芸花藝', card: '永芸花藝', pot: 1, pair: 0, cards: 1, note: '', due: '' },
       { id: 26, area: '新埔六街土地公（外灘）', name: '朱明鴻、江慈穗', card: '朱明鴻、江慈穗', pot: 1, pair: 0, cards: 1, note: 'LINE：江慈穗，送完要拍照給她', due: '2026.05.01' },
@@ -818,7 +823,7 @@
       const units = rows.reduce((s, o) => s + flowerUnits(o), 0), cards = rows.reduce((s, o) => s + Number(o.cards || 0), 0);
       const sponge = {}; rows.forEach(o => { let k = o.sponge || '未設定'; sponge[k] = (sponge[k] || 0) + flowerUnits(o) });
       $('countText').textContent = `目前顯示 ${rows.length} 筆 / 全部 ${orders.length} 筆`;
-      $('sumText').textContent = `盆量 ${units} ｜卡片 ${cards}｜${Object.entries(sponge).map(([k, v]) => k + ' ' + v).join('、')}`;
+      $('sumText').textContent = '';
     }
     function calcStats(list) {
       const base = {
@@ -953,7 +958,7 @@
     <td class="card">${esc(o.card)}</td>
 <td>${o.qty || 0}${o.unit || ''}</td>
 <td>${o.cards || 0}張</td>
-<td>${esc(o.sponge || '未設定')}</td>
+<td class="sponge">${esc(o.sponge || '未設定')}</td>
     <td><span class="badge info">${cycleText(o.cycle)}</span></td>
 <td>${esc(o.endDate || o.due || '-')}${o.times ? `<div class="muted">共 ${o.times} 次，開始 ${o.startDate}</div>` : ''}</td>
     <td class="note">${esc(o.note || '')}</td>
