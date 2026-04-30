@@ -700,6 +700,7 @@
       <div><label>海綿</label><select id="fSponge" onchange="preview()">
           <option>1/3 長海綿</option>
           <option selected>1/2 海綿</option>
+          <option>花束</option>
         </select></div>
       <div><label>卡片數量</label><input id="fCards" type="number" min="0" value="1"></div>
       <div><label>供花規則</label><select id="fCycle" onchange="preview()">
@@ -825,67 +826,95 @@
       $('countText').textContent = `目前顯示 ${rows.length} 筆 / 全部 ${orders.length} 筆`;
       $('sumText').textContent = '';
     }
-    function calcStats(list) {
-      const base = {
+
+function isActiveOnDate(o, eventDate) {
+  const due = parseDate(o.endDate || o.due);
+
+  if (o.startDate && eventDate < o.startDate) return false;
+
+  // 沒填到期日，視為持續有效
+  if (!o.endDate && !o.due) return true;
+
+  // 有填但不是標準日期，不納入統計
+  if (!due) return false;
+
+  return due >= parseDate(eventDate);
+}
+
+function addSpongeCount(target, prefix, sponge, actualPots) {
+  if (sponge.includes('1/3')) {
+    target[prefix + 'Sponge13'] += actualPots;
+  } else if (sponge.includes('花束')) {
+    target[prefix + 'Bouquet'] += actualPots;
+  } else {
+    target[prefix + 'Sponge12'] += actualPots;
+  }
+}
+
+function calcStats(list) {
+  const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+  const thisMonthEvents = LUNAR_EVENTS.filter(e => e.date.startsWith(month));
+
+  const base = {
+    firstPot: 0, firstPair: 0,
+    fifteenPot: 0, fifteenPair: 0,
+    firstSponge13: 0, firstSponge12: 0, firstBouquet: 0,
+    fifteenSponge13: 0, fifteenSponge12: 0, fifteenBouquet: 0,
+    areas: {}
+  };
+
+  function addArea(area) {
+    if (!base.areas[area]) {
+      base.areas[area] = {
         firstPot: 0, firstPair: 0,
-        fifteenPot: 0, fifteenPair: 0,
-        firstSponge13: 0, firstSponge12: 0,
-        fifteenSponge13: 0, fifteenSponge12: 0,
-        areas: {}
+        fifteenPot: 0, fifteenPair: 0
       };
-
-      function addArea(area) {
-        if (!base.areas[area]) {
-          base.areas[area] = {
-            firstPot: 0, firstPair: 0,
-            fifteenPot: 0, fifteenPair: 0,
-            firstSponge13: 0, firstSponge12: 0,
-            fifteenSponge13: 0, fifteenSponge12: 0
-          };
-        }
-        return base.areas[area];
-      }
-
-      list.forEach(o => {
-        const pot = Number(o.pot || 0);
-        const pair = Number(o.pair || 0);
-        const actualPots = pot + pair * 2;
-        const sponge = o.sponge || '1/2 海綿';
-        const area = addArea(o.area || '未分類');
-
-        if (isFirst(o)) {
-          base.firstPot += pot;
-          base.firstPair += pair;
-          area.firstPot += pot;
-          area.firstPair += pair;
-
-          if (sponge.includes('1/3')) {
-            base.firstSponge13 += actualPots;
-            area.firstSponge13 += actualPots;
-          } else {
-            base.firstSponge12 += actualPots;
-            area.firstSponge12 += actualPots;
-          }
-        }
-
-        if (isFifteen(o)) {
-          base.fifteenPot += pot;
-          base.fifteenPair += pair;
-          area.fifteenPot += pot;
-          area.fifteenPair += pair;
-
-          if (sponge.includes('1/3')) {
-            base.fifteenSponge13 += actualPots;
-            area.fifteenSponge13 += actualPots;
-          } else {
-            base.fifteenSponge12 += actualPots;
-            area.fifteenSponge12 += actualPots;
-          }
-        }
-      });
-
-      return base;
     }
+    return base.areas[area];
+  }
+
+  list.forEach(o => {
+    const pot = Number(o.pot || 0);
+    const pair = Number(o.pair || 0);
+    const actualPots = pot + pair * 2;
+    const sponge = o.sponge || '1/2 海綿';
+    const area = addArea(o.area || '未分類');
+
+    const hasFirstThisMonth = thisMonthEvents.some(e =>
+      ['初一', '初二'].includes(e.type) &&
+      (
+        (o.cycle === '初一初十五' && e.type === '初一') ||
+        (o.cycle === '初一' && e.type === '初一') ||
+        (o.cycle === '初二' && e.type === '初二')
+      ) &&
+      isActiveOnDate(o, e.date)
+    );
+
+    const hasFifteenThisMonth = thisMonthEvents.some(e =>
+      e.type === '初十五' &&
+      ['初十五', '初一初十五'].includes(o.cycle) &&
+      isActiveOnDate(o, e.date)
+    );
+
+    if (hasFirstThisMonth) {
+      base.firstPot += pot;
+      base.firstPair += pair;
+      area.firstPot += pot;
+      area.firstPair += pair;
+      addSpongeCount(base, 'first', sponge, actualPots);
+    }
+
+    if (hasFifteenThisMonth) {
+      base.fifteenPot += pot;
+      base.fifteenPair += pair;
+      area.fifteenPot += pot;
+      area.fifteenPair += pair;
+      addSpongeCount(base, 'fifteen', sponge, actualPots);
+    }
+  });
+
+  return base;
+}
     function activeOrders() {
       return orders.filter(o => {
         const s = dueStatus(o);
@@ -893,7 +922,7 @@
       });
     }
     function renderStats() {
-      const s = calcStats(activeOrders());
+      const s = calcStats(orders);
       const areaRows = Object.entries(s.areas)
         .sort((a, b) => a[0].localeCompare(b[0], 'zh-Hant'))
         .map(([area, x]) => `
@@ -929,9 +958,9 @@
       <div class="statBox">
         <h3>海綿數量</h3>
         <table class="statTable">
-          <tr><th></th><th>1/3長海綿</th><th>1/2海綿</th></tr>
-          <tr><td>初一</td><td>${s.firstSponge13}</td><td>${s.firstSponge12}</td></tr>
-          <tr><td>初十五</td><td>${s.fifteenSponge13}</td><td>${s.fifteenSponge12}</td></tr>
+<tr><th></th><th>1/3長海綿</th><th>1/2海綿</th><th>花束</th></tr>
+<tr><td>初一</td><td>${s.firstSponge13}</td><td>${s.firstSponge12}</td><td>${s.firstBouquet}</td></tr>
+<tr><td>初十五</td><td>${s.fifteenSponge13}</td><td>${s.fifteenSponge12}</td><td>${s.fifteenBouquet}</td></tr>
         </table>
       </div>
     </div>
@@ -951,6 +980,7 @@
     </div>
   `;
     }
+    
     function renderTable(rows) {
       $('tbody').innerHTML = rows.map(o => `<tr>
     <td class="name"><b>${esc(o.name)}</b></td>
