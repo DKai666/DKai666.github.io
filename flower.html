@@ -393,7 +393,7 @@
       padding: 12px 16px;
       display: none;
       box-shadow: var(--shadow);
-      z-index: 20
+      z-index: 20000;
     }
 
     .toast.show {
@@ -478,15 +478,36 @@
       margin-top: 12px
     }
 
+    .noticeRow {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+
     .noticeBar {
       background: #fff7ed;
       border: 1px solid #fed7aa;
       color: #9a3412;
       border-radius: 16px;
-      padding: 10px 14px;
-      margin-bottom: 12px;
+      padding: 8px 12px;
       cursor: pointer;
       overflow: hidden;
+      white-space: nowrap;
+      width: 100%;
+      max-width: none;
+    }
+
+    .nextLunarBox {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      border-radius: 16px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 900;
       white-space: nowrap;
     }
 
@@ -495,6 +516,38 @@
       padding-left: 100%;
       animation: marquee 18s linear infinite;
       font-weight: 900;
+    }
+
+    .loadingMask {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.82);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loadingMask.show {
+      display: flex;
+    }
+
+    .loadingBox {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .loadingBox img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
     }
 
     @keyframes marquee {
@@ -615,12 +668,16 @@
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="blue" onclick="openDrawer('add')">＋ 新增客戶</button>
-        <button class="light" onclick="window.print()" style="display:none">列印目前清單</button>
-        <button class="light" onclick="exportCsv()" style="display:none">匯出 CSV</button>
+        <!-- <button class="light" onclick="window.print()" style="display:none">列印目前清單</button>
+        <button class="light" onclick="exportCsv()" style="display:none">匯出 CSV</button> -->
       </div>
     </div>
-    <div class="noticeBar" onclick="editNotice()">
-      <span id="noticeText" class="noticeTrack">可以的話拜拜花要拍照</span>
+    <div class="noticeRow">
+      <div class="noticeBar" onclick="editNotice()">
+        <span id="noticeText" class="noticeTrack"></span>
+      </div>
+
+      <div id="nextLunarBox" class="nextLunarBox"></div>
     </div>
     <section class="panel">
       <div id="statsArea"></div>
@@ -665,7 +722,7 @@
             <th>卡片</th>
             <th>海綿</th>
             <th>規則</th>
-            <th>最後一次 / 到期</th>
+            <th>最後到期</th>
             <th>注意事項</th>
             <th>操作</th>
           </tr>
@@ -688,9 +745,9 @@
     <div class="form">
       <input type="hidden" id="editId" />
       <div><label>客戶名字</label><input id="fName" placeholder="例如：王小明"></div>
-      <div><label>地區</label><input id="fArea" list="areaOptions" placeholder="例如：中埔二街土地公"><datalist
+      <div><label>地區</label><input id="fArea" list="areaOptions" placeholder="例如：土地公"><datalist
           id="areaOptions"></datalist></div>
-      <div class="full"><label>卡片下款</label><textarea id="fCard" placeholder="卡片要寫的名字"></textarea></div>
+      <div class="full"><label>卡片下款</label><textarea id="fCard"></textarea></div>
       <div><label>供花單位</label>
         <div class="seg"><label class="choice"><input type="radio" name="unit" value="盆" checked
               onchange="preview()">盆</label><label class="choice"><input type="radio" name="unit" value="對"
@@ -711,7 +768,7 @@
         </select></div>
       <div><label>購買次數</label><input id="fTimes" type="number" min="1" value="12" oninput="preview()"></div>
       <div><label>開始供花日（國曆）</label><input id="fStart" type="date" value="2026-05-01" onchange="preview()"></div>
-      <div class="full"><label>注意事項</label><textarea id="fNote" placeholder="例如：初二才送、送完拍照、月結、LINE 名稱"></textarea></div>
+      <div class="full"><label>注意事項</label><textarea id="fNote" placeholder="例如：送完拍照、月結、LINE 名稱"></textarea></div>
       <div class="full"><label>自動計算結果</label>
         <div id="calcPreview" class="preview"></div>
       </div>
@@ -724,64 +781,174 @@
   </aside>
 
   <div id="toast" class="toast"></div>
-
+  <div id="loadingMask" class="loadingMask">
+    <div class="loadingBox" id="loadingBox"></div>
+  </div>
   <script>
-    let orders = [
-
-      { id: 1, area: '中埔二街土地公', name: '單培華', card: '朱志強全家', pot: 1, pair: 0, cards: 1, note: 'LINE:朱志強', due: '2026.11.23' },
-      { id: 2, area: '中埔二街土地公', name: '李若菁、李冠儒', card: '李若菁、李冠儒', pot: 1, pair: 0, cards: 1, note: '', due: '2026.10.24' },
-      { id: 3, area: '中埔二街土地公', name: '永芸花藝', card: '永芸花藝', pot: 1, pair: 0, cards: 1, note: '', due: '' },
-      { id: 4, area: '中埔二街土地公', name: '雨政葡萄酒坊', card: '雨政葡萄酒坊', pot: 1, pair: 0, cards: 1, note: '月結，初一送完隔兩三天連絡收款  已收款至2025.10.21', due: '' },
-      { id: 5, area: '中埔二街土地公', name: '宗和文理', card: '宗和文理', pot: 1, pair: 0, cards: 1, note: '初二才送', due: '2026.10.11' },
-      { id: 6, area: '中埔二街土地公', name: '董鑑興', card: '歐華衛浴有限公司\n立裕衛浴材料行\n桃園市桃園區同德五街331號\nTEL:03-3023303', pot: 1, pair: 0, cards: 1, note: 'LINE:董鑑興', due: '2026.12.09' },
-      { id: 7, area: '中埔二街土地公', name: '程小姐', card: '程溫淑', pot: 1, pair: 0, cards: 1, note: '', due: '2026.05.01' },
-      { id: 8, area: '中埔二街土地公', name: '胤象空間', card: '胤象空間 衷於工事', pot: 1, pair: 0, cards: 1, note: 'LINE：3D House，送完要拍照給她', due: '2027.03.08' },
-      { id: 9, area: '中埔二街土地公', name: '和潤融資', card: '和潤融資陳經理', pot: 1, pair: 0, cards: 1, note: 'LINE：阿賓(和潤，送完要拍照給她，$800/一盆', due: '2026.08.13' },
-      { id: 10, area: '中埔二街土地公', name: '程譯有限公司', card: '程譯有限公司', pot: 1, pair: 0, cards: 1, note: '', due: '2026.07.13' },
-      { id: 11, area: '中埔二街土地公', name: '永速配眼鏡', card: '永速配眼鏡', pot: 1, pair: 0, cards: 1, note: '', due: '2026.06.15' },
-      { id: 12, area: '中埔二街土地公', name: '伊嘉寶貝寵物美容坊', card: '伊嘉寶貝寵物美容坊 全體同仁', pot: 1, pair: 0, cards: 1, note: '', due: '2026.10.10' },
-      { id: 13, area: '中埔二街土地公', name: '潘達美語', card: '潘達國小安親 & Live互動美語', pot: 1, pair: 0, cards: 1, note: '', due: '2026.11.24' },
-      { id: 14, area: '中埔二街土地公', name: '楊素惠', card: '施南宏、楊素惠', pot: 1, pair: 0, cards: 1, note: '初二才送', due: '2026.07.14' },
-      { id: 15, area: '中埔二街土地公', name: '吳啟豪', card: '展嘉物理治療所', pot: 1, pair: 0, cards: 1, note: '', due: '2026.07.14' },
-      { id: 16, area: '中埔二街土地公', name: '黃鳳嬌', card: '黃鳳嬌全家', pot: 1, pair: 0, cards: 1, note: '', due: '2026.08.27' },
-      { id: 17, area: '中埔二街土地公', name: '張雯筑', card: '張雯筑、蘇柏睿', pot: 1, pair: 0, cards: 1, note: '初一才送', due: '2026.08.13' },
-      { id: 18, area: '中埔二街土地公', name: '廖婉妤', card: '廖靖育 詹逸蓮闔家', pot: 1, pair: 0, cards: 1, note: '', due: '2026.09.25' },
-      { id: 19, area: '中埔二街土地公', name: '游翊琳', card: '南山人壽區經理曾天放 游翊琳', pot: 1, pair: 0, cards: 1, note: '', due: '2027.01.08' },
-      { id: 20, area: '中埔二街土地公', name: '謝鴻恩', card: '易興玻璃工程行', pot: 1, pair: 0, cards: 1, note: '', due: '2027.02.06' },
-      { id: 21, area: '中埔二街土地公', name: '郭芳秀', card: '郭芳秀', pot: 1, pair: 0, cards: 1, note: '', due: '2027.02.20' },
-      { id: 22, area: '中埔二街土地公', name: '吳秀華', card: '劉榮基、吳秀華', pot: 1, pair: 0, cards: 1, note: '', due: '2027.03.22' },
-      { id: 23, area: '中埔二街土地公', name: '呂學龍(爐主)', card: '呂學龍', pot: 0, pair: 0, cards: 0, note: '$600/一對花束  已收款至---4/17(農曆3月初2) 農曆3/15後不用送', due: '' },
-      { id: 24, area: '新埔六街土地公（外灘）', name: '勤洋資訊有限公司', card: '勤洋資訊有限公司', pot: 1, pair: 0, cards: 1, note: '提前2次通知', due: '2027.02.07', notify: '2027.01.08通知' },
-      { id: 25, area: '新埔六街土地公（外灘）', name: '永芸花藝', card: '永芸花藝', pot: 1, pair: 0, cards: 1, note: '', due: '' },
-      { id: 26, area: '新埔六街土地公（外灘）', name: '朱明鴻、江慈穗', card: '朱明鴻、江慈穗', pot: 1, pair: 0, cards: 1, note: 'LINE：江慈穗，送完要拍照給她', due: '2026.05.01' },
-      { id: 27, area: '中正路燒肉同話旁', name: '劉浩瑋', card: '劉浩瑋、胡繡月華\n劉葉栐、鄭瑞茶\n卡片各一張', pot: 0, pair: 1, cards: 2, note: '$1000/一對', due: '2026.06.15' },
-      { id: 28, area: '忠正宮', name: '美彩', card: '好友人力資源管理顧問股份有限公司', pot: 1, pair: 0, cards: 1, note: 'LINE：美彩，03-301883#張小姐', due: '2026.11.23' },
-      { id: 29, area: '忠正宮', name: '黃郡頤', card: '黃郡頤', pot: 1, pair: 0, cards: 1, note: '', due: '2027.01.22' },
-      { id: 30, area: '忠正宮', name: '郭千禎', card: '郭千禎', pot: 0, pair: 1, cards: 2, note: '初一才送 LINE：千禎', due: '2026.08.13' },
-      { id: 31, area: '豐年宮', name: '林琪霏', card: '林琪霏', pot: 1, pair: 0, cards: 1, note: '農1/1、1/15新年快樂、2/2聖誕千秋 加大一盆$1200', due: '2026.12.23' },
-      { id: 32, area: '自取', name: '楊依頻', card: '楊依頻、徐晟軒', pot: 1, pair: 0, cards: 1, note: '', due: '2026.06.15' },
-      { id: 33, area: '自取', name: '張雯筑', card: '張雯筑、蘇柏睿', pot: 1, pair: 0, cards: 1, note: '初一才送', due: '2026.08.13' }
-
-    ];
-
-    const LUNAR_EVENTS = [{ "date": "2026-02-17", "type": "初一", "label": "農曆1月初一" }, { "date": "2026-02-18", "type": "初二", "label": "農曆1月初二" }, { "date": "2026-03-03", "type": "初十五", "label": "農曆1月初十五" }, { "date": "2026-03-19", "type": "初一", "label": "農曆2月初一" }, { "date": "2026-03-20", "type": "初二", "label": "農曆2月初二" }, { "date": "2026-04-02", "type": "初十五", "label": "農曆2月初十五" }, { "date": "2026-04-17", "type": "初一", "label": "農曆3月初一" }, { "date": "2026-04-18", "type": "初二", "label": "農曆3月初二" }, { "date": "2026-05-01", "type": "初十五", "label": "農曆3月初十五" }, { "date": "2026-05-17", "type": "初一", "label": "農曆4月初一" }, { "date": "2026-05-18", "type": "初二", "label": "農曆4月初二" }, { "date": "2026-05-31", "type": "初十五", "label": "農曆4月初十五" }, { "date": "2026-06-15", "type": "初一", "label": "農曆5月初一" }, { "date": "2026-06-16", "type": "初二", "label": "農曆5月初二" }, { "date": "2026-06-29", "type": "初十五", "label": "農曆5月初十五" }, { "date": "2026-07-14", "type": "初一", "label": "農曆6月初一" }, { "date": "2026-07-15", "type": "初二", "label": "農曆6月初二" }, { "date": "2026-07-28", "type": "初十五", "label": "農曆6月初十五" }, { "date": "2026-08-13", "type": "初一", "label": "農曆7月初一" }, { "date": "2026-08-14", "type": "初二", "label": "農曆7月初二" }, { "date": "2026-08-27", "type": "初十五", "label": "農曆7月初十五" }, { "date": "2026-09-11", "type": "初一", "label": "農曆8月初一" }, { "date": "2026-09-12", "type": "初二", "label": "農曆8月初二" }, { "date": "2026-09-25", "type": "初十五", "label": "農曆8月初十五" }, { "date": "2026-10-11", "type": "初一", "label": "農曆9月初一" }, { "date": "2026-10-12", "type": "初二", "label": "農曆9月初二" }, { "date": "2026-10-25", "type": "初十五", "label": "農曆9月初十五" }, { "date": "2026-11-09", "type": "初一", "label": "農曆10月初一" }, { "date": "2026-11-10", "type": "初二", "label": "農曆10月初二" }, { "date": "2026-11-23", "type": "初十五", "label": "農曆10月初十五" }, { "date": "2026-12-09", "type": "初一", "label": "農曆11月初一" }, { "date": "2026-12-10", "type": "初二", "label": "農曆11月初二" }, { "date": "2026-12-23", "type": "初十五", "label": "農曆11月初十五" }, { "date": "2027-01-08", "type": "初一", "label": "農曆12月初一" }, { "date": "2027-01-09", "type": "初二", "label": "農曆12月初二" }, { "date": "2027-01-22", "type": "初十五", "label": "農曆12月初十五" }, { "date": "2027-02-07", "type": "初一", "label": "農曆1月初一" }, { "date": "2027-02-08", "type": "初二", "label": "農曆1月初二" }, { "date": "2027-02-21", "type": "初十五", "label": "農曆1月初十五" }, { "date": "2027-03-08", "type": "初一", "label": "農曆2月初一" }, { "date": "2027-03-09", "type": "初二", "label": "農曆2月初二" }, { "date": "2027-03-22", "type": "初十五", "label": "農曆2月初十五" }, { "date": "2027-04-07", "type": "初一", "label": "農曆3月初一" }, { "date": "2027-04-08", "type": "初二", "label": "農曆3月初二" }, { "date": "2027-04-21", "type": "初十五", "label": "農曆3月初十五" }, { "date": "2027-05-06", "type": "初一", "label": "農曆4月初一" }, { "date": "2027-05-07", "type": "初二", "label": "農曆4月初二" }, { "date": "2027-05-20", "type": "初十五", "label": "農曆4月初十五" }, { "date": "2027-06-05", "type": "初一", "label": "農曆5月初一" }, { "date": "2027-06-06", "type": "初二", "label": "農曆5月初二" }, { "date": "2027-06-19", "type": "初十五", "label": "農曆5月初十五" }, { "date": "2027-07-04", "type": "初一", "label": "農曆6月初一" }, { "date": "2027-07-05", "type": "初二", "label": "農曆6月初二" }, { "date": "2027-07-18", "type": "初十五", "label": "農曆6月初十五" }, { "date": "2027-08-02", "type": "初一", "label": "農曆7月初一" }, { "date": "2027-08-03", "type": "初二", "label": "農曆7月初二" }, { "date": "2027-08-16", "type": "初十五", "label": "農曆7月初十五" }, { "date": "2027-09-01", "type": "初一", "label": "農曆8月初一" }, { "date": "2027-09-02", "type": "初二", "label": "農曆8月初二" }, { "date": "2027-09-15", "type": "初十五", "label": "農曆8月初十五" }, { "date": "2027-09-30", "type": "初一", "label": "農曆9月初一" }, { "date": "2027-10-01", "type": "初二", "label": "農曆9月初二" }, { "date": "2027-10-14", "type": "初十五", "label": "農曆9月初十五" }, { "date": "2027-10-29", "type": "初一", "label": "農曆10月初一" }, { "date": "2027-10-30", "type": "初二", "label": "農曆10月初二" }, { "date": "2027-11-12", "type": "初十五", "label": "農曆10月初十五" }, { "date": "2027-11-28", "type": "初一", "label": "農曆11月初一" }, { "date": "2027-11-29", "type": "初二", "label": "農曆11月初二" }, { "date": "2027-12-12", "type": "初十五", "label": "農曆11月初十五" }, { "date": "2027-12-28", "type": "初一", "label": "農曆12月初一" }, { "date": "2027-12-29", "type": "初二", "label": "農曆12月初二" }, { "date": "2028-01-11", "type": "初十五", "label": "農曆12月初十五" }, { "date": "2028-01-27", "type": "初一", "label": "農曆1月初一" }, { "date": "2028-01-28", "type": "初二", "label": "農曆1月初二" }, { "date": "2028-02-10", "type": "初十五", "label": "農曆1月初十五" }, { "date": "2028-02-25", "type": "初一", "label": "農曆2月初一" }, { "date": "2028-02-26", "type": "初二", "label": "農曆2月初二" }, { "date": "2028-03-10", "type": "初十五", "label": "農曆2月初十五" }, { "date": "2028-03-26", "type": "初一", "label": "農曆3月初一" }, { "date": "2028-03-27", "type": "初二", "label": "農曆3月初二" }, { "date": "2028-04-09", "type": "初十五", "label": "農曆3月初十五" }, { "date": "2028-04-25", "type": "初一", "label": "農曆4月初一" }, { "date": "2028-04-26", "type": "初二", "label": "農曆4月初二" }, { "date": "2028-05-09", "type": "初十五", "label": "農曆4月初十五" }, { "date": "2028-05-24", "type": "初一", "label": "農曆5月初一" }, { "date": "2028-05-25", "type": "初二", "label": "農曆5月初二" }, { "date": "2028-06-07", "type": "初十五", "label": "農曆5月初十五" }, { "date": "2028-06-23", "type": "初一", "label": "閏5月初一" }, { "date": "2028-06-24", "type": "初二", "label": "閏5月初二" }, { "date": "2028-07-07", "type": "初十五", "label": "閏5月初十五" }, { "date": "2028-07-22", "type": "初一", "label": "農曆6月初一" }, { "date": "2028-07-23", "type": "初二", "label": "農曆6月初二" }, { "date": "2028-08-05", "type": "初十五", "label": "農曆6月初十五" }, { "date": "2028-08-20", "type": "初一", "label": "農曆7月初一" }, { "date": "2028-08-21", "type": "初二", "label": "農曆7月初二" }, { "date": "2028-09-03", "type": "初十五", "label": "農曆7月初十五" }, { "date": "2028-09-19", "type": "初一", "label": "農曆8月初一" }, { "date": "2028-09-20", "type": "初二", "label": "農曆8月初二" }, { "date": "2028-10-03", "type": "初十五", "label": "農曆8月初十五" }, { "date": "2028-10-18", "type": "初一", "label": "農曆9月初一" }, { "date": "2028-10-19", "type": "初二", "label": "農曆9月初二" }, { "date": "2028-11-01", "type": "初十五", "label": "農曆9月初十五" }, { "date": "2028-11-16", "type": "初一", "label": "農曆10月初一" }, { "date": "2028-11-17", "type": "初二", "label": "農曆10月初二" }, { "date": "2028-11-30", "type": "初十五", "label": "農曆10月初十五" }, { "date": "2028-12-16", "type": "初一", "label": "農曆11月初一" }, { "date": "2028-12-17", "type": "初二", "label": "農曆11月初二" }, { "date": "2028-12-30", "type": "初十五", "label": "農曆11月初十五" }, { "date": "2029-01-15", "type": "初一", "label": "農曆12月初一" }, { "date": "2029-01-16", "type": "初二", "label": "農曆12月初二" }, { "date": "2029-01-29", "type": "初十五", "label": "農曆12月初十五" }, { "date": "2029-02-13", "type": "初一", "label": "農曆1月初一" }, { "date": "2029-02-14", "type": "初二", "label": "農曆1月初二" }, { "date": "2029-02-27", "type": "初十五", "label": "農曆1月初十五" }, { "date": "2029-03-15", "type": "初一", "label": "農曆2月初一" }, { "date": "2029-03-16", "type": "初二", "label": "農曆2月初二" }, { "date": "2029-03-29", "type": "初十五", "label": "農曆2月初十五" }, { "date": "2029-04-14", "type": "初一", "label": "農曆3月初一" }, { "date": "2029-04-15", "type": "初二", "label": "農曆3月初二" }, { "date": "2029-04-28", "type": "初十五", "label": "農曆3月初十五" }, { "date": "2029-05-13", "type": "初一", "label": "農曆4月初一" }, { "date": "2029-05-14", "type": "初二", "label": "農曆4月初二" }, { "date": "2029-05-27", "type": "初十五", "label": "農曆4月初十五" }, { "date": "2029-06-12", "type": "初一", "label": "農曆5月初一" }, { "date": "2029-06-13", "type": "初二", "label": "農曆5月初二" }, { "date": "2029-06-26", "type": "初十五", "label": "農曆5月初十五" }, { "date": "2029-07-12", "type": "初一", "label": "農曆6月初一" }, { "date": "2029-07-13", "type": "初二", "label": "農曆6月初二" }, { "date": "2029-07-26", "type": "初十五", "label": "農曆6月初十五" }, { "date": "2029-08-10", "type": "初一", "label": "農曆7月初一" }, { "date": "2029-08-11", "type": "初二", "label": "農曆7月初二" }, { "date": "2029-08-24", "type": "初十五", "label": "農曆7月初十五" }, { "date": "2029-09-08", "type": "初一", "label": "農曆8月初一" }, { "date": "2029-09-09", "type": "初二", "label": "農曆8月初二" }, { "date": "2029-09-22", "type": "初十五", "label": "農曆8月初十五" }, { "date": "2029-10-08", "type": "初一", "label": "農曆9月初一" }, { "date": "2029-10-09", "type": "初二", "label": "農曆9月初二" }, { "date": "2029-10-22", "type": "初十五", "label": "農曆9月初十五" }, { "date": "2029-11-06", "type": "初一", "label": "農曆10月初一" }, { "date": "2029-11-07", "type": "初二", "label": "農曆10月初二" }, { "date": "2029-11-20", "type": "初十五", "label": "農曆10月初十五" }, { "date": "2029-12-05", "type": "初一", "label": "農曆11月初一" }, { "date": "2029-12-06", "type": "初二", "label": "農曆11月初二" }, { "date": "2029-12-19", "type": "初十五", "label": "農曆11月初十五" }, { "date": "2030-01-04", "type": "初一", "label": "農曆12月初一" }, { "date": "2030-01-05", "type": "初二", "label": "農曆12月初二" }, { "date": "2030-01-18", "type": "初十五", "label": "農曆12月初十五" }, { "date": "2030-02-03", "type": "初一", "label": "農曆1月初一" }, { "date": "2030-02-04", "type": "初二", "label": "農曆1月初二" }, { "date": "2030-02-17", "type": "初十五", "label": "農曆1月初十五" }, { "date": "2030-03-04", "type": "初一", "label": "農曆2月初一" }, { "date": "2030-03-05", "type": "初二", "label": "農曆2月初二" }, { "date": "2030-03-18", "type": "初十五", "label": "農曆2月初十五" }, { "date": "2030-04-03", "type": "初一", "label": "農曆3月初一" }, { "date": "2030-04-04", "type": "初二", "label": "農曆3月初二" }, { "date": "2030-04-17", "type": "初十五", "label": "農曆3月初十五" }, { "date": "2030-05-02", "type": "初一", "label": "農曆4月初一" }, { "date": "2030-05-03", "type": "初二", "label": "農曆4月初二" }, { "date": "2030-05-16", "type": "初十五", "label": "農曆4月初十五" }, { "date": "2030-06-01", "type": "初一", "label": "農曆5月初一" }, { "date": "2030-06-02", "type": "初二", "label": "農曆5月初二" }, { "date": "2030-06-15", "type": "初十五", "label": "農曆5月初十五" }, { "date": "2030-07-01", "type": "初一", "label": "農曆6月初一" }, { "date": "2030-07-02", "type": "初二", "label": "農曆6月初二" }, { "date": "2030-07-15", "type": "初十五", "label": "農曆6月初十五" }, { "date": "2030-07-30", "type": "初一", "label": "農曆7月初一" }, { "date": "2030-07-31", "type": "初二", "label": "農曆7月初二" }, { "date": "2030-08-13", "type": "初十五", "label": "農曆7月初十五" }, { "date": "2030-08-29", "type": "初一", "label": "農曆8月初一" }, { "date": "2030-08-30", "type": "初二", "label": "農曆8月初二" }, { "date": "2030-09-12", "type": "初十五", "label": "農曆8月初十五" }, { "date": "2030-09-27", "type": "初一", "label": "農曆9月初一" }, { "date": "2030-09-28", "type": "初二", "label": "農曆9月初二" }, { "date": "2030-10-11", "type": "初十五", "label": "農曆9月初十五" }, { "date": "2030-10-27", "type": "初一", "label": "農曆10月初一" }, { "date": "2030-10-28", "type": "初二", "label": "農曆10月初二" }, { "date": "2030-11-10", "type": "初十五", "label": "農曆10月初十五" }, { "date": "2030-11-25", "type": "初一", "label": "農曆11月初一" }, { "date": "2030-11-26", "type": "初二", "label": "農曆11月初二" }, { "date": "2030-12-09", "type": "初十五", "label": "農曆11月初十五" }, { "date": "2030-12-25", "type": "初一", "label": "農曆12月初一" }, { "date": "2030-12-26", "type": "初二", "label": "農曆12月初二" }, { "date": "2031-01-08", "type": "初十五", "label": "農曆12月初十五" }];
-
-    const today = new Date('2026-04-28T00:00:00');
+    let orders = [];
+    let settings = {};
+    const LUNAR_EVENTS = [{ "date": "2026-01-03", "type": "初十五", "label": "農曆11月初十五" }, { "date": "2026-01-19", "type": "初一", "label": "農曆12月初一" }, { "date": "2026-01-20", "type": "初二", "label": "農曆12月初二" }, { "date": "2026-02-02", "type": "初十五", "label": "農曆12月初十五" }, { "date": "2026-02-17", "type": "初一", "label": "農曆1月初一" }, { "date": "2026-02-18", "type": "初二", "label": "農曆1月初二" }, { "date": "2026-03-03", "type": "初十五", "label": "農曆1月初十五" }, { "date": "2026-03-19", "type": "初一", "label": "農曆2月初一" }, { "date": "2026-03-20", "type": "初二", "label": "農曆2月初二" }, { "date": "2026-04-02", "type": "初十五", "label": "農曆2月初十五" }, { "date": "2026-04-17", "type": "初一", "label": "農曆3月初一" }, { "date": "2026-04-18", "type": "初二", "label": "農曆3月初二" }, { "date": "2026-05-01", "type": "初十五", "label": "農曆3月初十五" }, { "date": "2026-05-17", "type": "初一", "label": "農曆4月初一" }, { "date": "2026-05-18", "type": "初二", "label": "農曆4月初二" }, { "date": "2026-05-31", "type": "初十五", "label": "農曆4月初十五" }, { "date": "2026-06-15", "type": "初一", "label": "農曆5月初一" }, { "date": "2026-06-16", "type": "初二", "label": "農曆5月初二" }, { "date": "2026-06-29", "type": "初十五", "label": "農曆5月初十五" }, { "date": "2026-07-14", "type": "初一", "label": "農曆6月初一" }, { "date": "2026-07-15", "type": "初二", "label": "農曆6月初二" }, { "date": "2026-07-28", "type": "初十五", "label": "農曆6月初十五" }, { "date": "2026-08-13", "type": "初一", "label": "農曆7月初一" }, { "date": "2026-08-14", "type": "初二", "label": "農曆7月初二" }, { "date": "2026-08-27", "type": "初十五", "label": "農曆7月初十五" }, { "date": "2026-09-11", "type": "初一", "label": "農曆8月初一" }, { "date": "2026-09-12", "type": "初二", "label": "農曆8月初二" }, { "date": "2026-09-25", "type": "初十五", "label": "農曆8月初十五" }, { "date": "2026-10-10", "type": "初一", "label": "農曆9月初一" }, { "date": "2026-10-11", "type": "初二", "label": "農曆9月初二" }, { "date": "2026-10-24", "type": "初十五", "label": "農曆9月初十五" }, { "date": "2026-11-09", "type": "初一", "label": "農曆10月初一" }, { "date": "2026-11-10", "type": "初二", "label": "農曆10月初二" }, { "date": "2026-11-23", "type": "初十五", "label": "農曆10月初十五" }, { "date": "2026-12-09", "type": "初一", "label": "農曆11月初一" }, { "date": "2026-12-10", "type": "初二", "label": "農曆11月初二" }, { "date": "2026-12-23", "type": "初十五", "label": "農曆11月初十五" }, { "date": "2027-01-08", "type": "初一", "label": "農曆12月初一" }, { "date": "2027-01-09", "type": "初二", "label": "農曆12月初二" }, { "date": "2027-01-22", "type": "初十五", "label": "農曆12月初十五" }, { "date": "2027-02-06", "type": "初一", "label": "農曆1月初一" }, { "date": "2027-02-07", "type": "初二", "label": "農曆1月初二" }, { "date": "2027-02-20", "type": "初十五", "label": "農曆1月初十五" }, { "date": "2027-03-08", "type": "初一", "label": "農曆2月初一" }, { "date": "2027-03-09", "type": "初二", "label": "農曆2月初二" }, { "date": "2027-03-22", "type": "初十五", "label": "農曆2月初十五" }, { "date": "2027-04-07", "type": "初一", "label": "農曆3月初一" }, { "date": "2027-04-08", "type": "初二", "label": "農曆3月初二" }, { "date": "2027-04-21", "type": "初十五", "label": "農曆3月初十五" }, { "date": "2027-05-06", "type": "初一", "label": "農曆4月初一" }, { "date": "2027-05-07", "type": "初二", "label": "農曆4月初二" }, { "date": "2027-05-20", "type": "初十五", "label": "農曆4月初十五" }, { "date": "2027-06-05", "type": "初一", "label": "農曆5月初一" }, { "date": "2027-06-06", "type": "初二", "label": "農曆5月初二" }, { "date": "2027-06-19", "type": "初十五", "label": "農曆5月初十五" }, { "date": "2027-07-04", "type": "初一", "label": "農曆6月初一" }, { "date": "2027-07-05", "type": "初二", "label": "農曆6月初二" }, { "date": "2027-07-18", "type": "初十五", "label": "農曆6月初十五" }, { "date": "2027-08-02", "type": "初一", "label": "農曆7月初一" }, { "date": "2027-08-03", "type": "初二", "label": "農曆7月初二" }, { "date": "2027-08-16", "type": "初十五", "label": "農曆7月初十五" }, { "date": "2027-09-01", "type": "初一", "label": "農曆8月初一" }, { "date": "2027-09-02", "type": "初二", "label": "農曆8月初二" }, { "date": "2027-09-15", "type": "初十五", "label": "農曆8月初十五" }, { "date": "2027-09-30", "type": "初一", "label": "農曆9月初一" }, { "date": "2027-10-01", "type": "初二", "label": "農曆9月初二" }, { "date": "2027-10-14", "type": "初十五", "label": "農曆9月初十五" }, { "date": "2027-10-29", "type": "初一", "label": "農曆10月初一" }, { "date": "2027-10-30", "type": "初二", "label": "農曆10月初二" }, { "date": "2027-11-12", "type": "初十五", "label": "農曆10月初十五" }, { "date": "2027-11-28", "type": "初一", "label": "農曆11月初一" }, { "date": "2027-11-29", "type": "初二", "label": "農曆11月初二" }, { "date": "2027-12-12", "type": "初十五", "label": "農曆11月初十五" }, { "date": "2027-12-28", "type": "初一", "label": "農曆12月初一" }, { "date": "2027-12-29", "type": "初二", "label": "農曆12月初二" }, { "date": "2028-01-11", "type": "初十五", "label": "農曆12月初十五" }, { "date": "2028-01-26", "type": "初一", "label": "農曆1月初一" }, { "date": "2028-01-27", "type": "初二", "label": "農曆1月初二" }, { "date": "2028-02-09", "type": "初十五", "label": "農曆1月初十五" }, { "date": "2028-02-25", "type": "初一", "label": "農曆2月初一" }, { "date": "2028-02-26", "type": "初二", "label": "農曆2月初二" }, { "date": "2028-03-10", "type": "初十五", "label": "農曆2月初十五" }, { "date": "2028-03-26", "type": "初一", "label": "農曆3月初一" }, { "date": "2028-03-27", "type": "初二", "label": "農曆3月初二" }, { "date": "2028-04-09", "type": "初十五", "label": "農曆3月初十五" }, { "date": "2028-04-25", "type": "初一", "label": "農曆4月初一" }, { "date": "2028-04-26", "type": "初二", "label": "農曆4月初二" }, { "date": "2028-05-09", "type": "初十五", "label": "農曆4月初十五" }, { "date": "2028-05-24", "type": "初一", "label": "農曆5月初一" }, { "date": "2028-05-25", "type": "初二", "label": "農曆5月初二" }, { "date": "2028-06-07", "type": "初十五", "label": "農曆5月初十五" }, { "date": "2028-06-23", "type": "初一", "label": "閏5月初一" }, { "date": "2028-06-24", "type": "初二", "label": "閏5月初二" }, { "date": "2028-07-07", "type": "初十五", "label": "閏5月初十五" }, { "date": "2028-07-22", "type": "初一", "label": "農曆6月初一" }, { "date": "2028-07-23", "type": "初二", "label": "農曆6月初二" }, { "date": "2028-08-05", "type": "初十五", "label": "農曆6月初十五" }, { "date": "2028-08-20", "type": "初一", "label": "農曆7月初一" }, { "date": "2028-08-21", "type": "初二", "label": "農曆7月初二" }, { "date": "2028-09-03", "type": "初十五", "label": "農曆7月初十五" }, { "date": "2028-09-19", "type": "初一", "label": "農曆8月初一" }, { "date": "2028-09-20", "type": "初二", "label": "農曆8月初二" }, { "date": "2028-10-03", "type": "初十五", "label": "農曆8月初十五" }, { "date": "2028-10-18", "type": "初一", "label": "農曆9月初一" }, { "date": "2028-10-19", "type": "初二", "label": "農曆9月初二" }, { "date": "2028-11-01", "type": "初十五", "label": "農曆9月初十五" }, { "date": "2028-11-16", "type": "初一", "label": "農曆10月初一" }, { "date": "2028-11-17", "type": "初二", "label": "農曆10月初二" }, { "date": "2028-11-30", "type": "初十五", "label": "農曆10月初十五" }, { "date": "2028-12-16", "type": "初一", "label": "農曆11月初一" }, { "date": "2028-12-17", "type": "初二", "label": "農曆11月初二" }, { "date": "2028-12-30", "type": "初十五", "label": "農曆11月初十五" }, { "date": "2029-01-15", "type": "初一", "label": "農曆12月初一" }, { "date": "2029-01-16", "type": "初二", "label": "農曆12月初二" }, { "date": "2029-01-29", "type": "初十五", "label": "農曆12月初十五" }, { "date": "2029-02-13", "type": "初一", "label": "農曆1月初一" }, { "date": "2029-02-14", "type": "初二", "label": "農曆1月初二" }, { "date": "2029-02-27", "type": "初十五", "label": "農曆1月初十五" }, { "date": "2029-03-15", "type": "初一", "label": "農曆2月初一" }, { "date": "2029-03-16", "type": "初二", "label": "農曆2月初二" }, { "date": "2029-03-29", "type": "初十五", "label": "農曆2月初十五" }, { "date": "2029-04-14", "type": "初一", "label": "農曆3月初一" }, { "date": "2029-04-15", "type": "初二", "label": "農曆3月初二" }, { "date": "2029-04-28", "type": "初十五", "label": "農曆3月初十五" }, { "date": "2029-05-13", "type": "初一", "label": "農曆4月初一" }, { "date": "2029-05-14", "type": "初二", "label": "農曆4月初二" }, { "date": "2029-05-27", "type": "初十五", "label": "農曆4月初十五" }, { "date": "2029-06-12", "type": "初一", "label": "農曆5月初一" }, { "date": "2029-06-13", "type": "初二", "label": "農曆5月初二" }, { "date": "2029-06-26", "type": "初十五", "label": "農曆5月初十五" }, { "date": "2029-07-11", "type": "初一", "label": "農曆6月初一" }, { "date": "2029-07-12", "type": "初二", "label": "農曆6月初二" }, { "date": "2029-07-25", "type": "初十五", "label": "農曆6月初十五" }, { "date": "2029-08-10", "type": "初一", "label": "農曆7月初一" }, { "date": "2029-08-11", "type": "初二", "label": "農曆7月初二" }, { "date": "2029-08-24", "type": "初十五", "label": "農曆7月初十五" }, { "date": "2029-09-08", "type": "初一", "label": "農曆8月初一" }, { "date": "2029-09-09", "type": "初二", "label": "農曆8月初二" }];
+    function todayDate() {
+      const d = new Date();
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+    function todayText() {
+      const d = todayDate();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
     let density = 'middle';
+    let saving = false;
+    let deleting = false;
     const $ = id => document.getElementById(id);
+    function toNumber(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzTaJFfVrDNCdXnPJoViL9n5WTUxU3pUw6StQER8Mrke1_Y8opE3M96SLk20J33YvUzCw/exec';
 
+    function api(action, payload = {}) {
+      return new Promise((resolve, reject) => {
+        const cb = 'jsonp_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+
+        window[cb] = function (res) {
+          delete window[cb];
+          script.remove();
+          resolve(res);
+        };
+
+        const script = document.createElement('script');
+        script.onerror = function () {
+          delete window[cb];
+          script.remove();
+          reject(new Error('GAS JSONP 請求失敗'));
+        };
+
+        const url =
+          API_URL +
+          '?callback=' + encodeURIComponent(cb) +
+          '&action=' + encodeURIComponent(action) +
+          '&payload=' + encodeURIComponent(JSON.stringify(payload));
+
+        script.src = url;
+        document.body.appendChild(script);
+      });
+    }
+
+    function gasOrderToFront(o) {
+      return {
+        id: o.id,
+        enabled: o.enabled,
+        area: o.area || '',
+        name: o.name || '',
+        card: o.cardText || '',
+        unit: o.unit || '盆',
+        qty: toNumber(o.qty),
+        pot: o.unit === '盆' ? toNumber(o.qty) : 0,
+        pair: o.unit === '對' ? toNumber(o.qty) : 0,
+        cards: toNumber(o.cards),
+        sponge: o.sponge || '1/2 海綿',
+        cycle: o.cycle || '初一初十五',
+        startDate: o.startDate || '',
+        endDate: o.endDate || '',
+        due: o.endDate || '',
+        note: o.note || '',
+        price: o.price || '',
+        contact: o.contact || '',
+        needPhoto: String(o.needPhoto).toLowerCase() === 'true',
+        createdAt: o.createdAt || '',
+        updatedAt: o.updatedAt || ''
+      };
+    }
+
+    function frontOrderToGas(o) {
+      return {
+        id: o.id || '',
+        enabled: true,
+        area: o.area || '',
+        name: o.name || '',
+        cardText: o.card || '',
+        unit: o.unit || '盆',
+        qty: toNumber(o.qty),
+        cards: toNumber(o.cards),
+        sponge: o.sponge || '1/2 海綿',
+        cycle: o.cycle || '初一初十五',
+        startDate: o.startDate || '',
+        endDate: o.endDate || '',
+        note: o.note || '',
+        price: o.price || '',
+        contact: o.contact || '',
+        needPhoto: /拍照/i.test(o.note || '')
+      };
+    }
+    function applyLoadingImage() {
+      const box = $('loadingBox');
+      const url = settings.loadingImage || '';
+
+      if (!url) {
+        box.innerHTML = '';
+        return;
+      }
+
+      const oldImg = box.querySelector('img');
+      if (oldImg && oldImg.src === url) return;
+
+      box.innerHTML = '';
+
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = '載入中';
+      box.appendChild(img);
+    }
+    async function loadData() {
+      setLoading(true);
+      try {
+        toast('資料載入中...');
+        const json = await api('getInitData');
+        if (!json.ok) throw new Error(json.message || 'GAS 回傳失敗');
+        orders = (json.data.orders || []).map(gasOrderToFront);
+        settings = json.data.settings || {};
+        applyLoadingImage();
+        if (settings.noticeText !== undefined) {
+          $('noticeText').textContent = settings.noticeText ?? '';
+        }
+        normalize();
+        setupOptions();
+        render();
+        renderNextLunar();
+        preview();
+        toast('資料已載入');
+      } catch (err) {
+        console.error(err);
+        toast('資料載入失敗：' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
     function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) }
     function parseDate(v) { if (!v || !/\d{4}[.\/\-]\d{2}[.\/\-]\d{2}/.test(v)) return null; let [y, m, d] = v.replaceAll('.', '-').replaceAll('/', '-').split('-').map(Number); return new Date(y, m - 1, d) }
-    function daysUntil(v) { let d = parseDate(v); return d ? Math.ceil((d - today) / 86400000) : null }
+    function daysUntil(v) {
+      let d = parseDate(v);
+      const today = todayDate();
+      return d ? Math.ceil((d - today) / 86400000) : null;
+    }
     function guessCycle(o) { let n = o.note || ''; if (n.includes('初二才送')) return '初二'; if (n.includes('初一才送')) return '初一'; if (n.includes('農曆3/15後不用送')) return '特殊'; if (n.includes('農1/1') || n.includes('1/15')) return '初一初十五'; return '初一初十五' }
-    function normalize() { orders.forEach(o => { o.done = o.done || false; o.cycle = o.cycle || guessCycle(o); o.unit = o.pair > 0 ? '對' : '盆'; o.qty = o.pair > 0 ? o.pair : o.pot; o.sponge = o.sponge || '1/2 海綿'; o.times = o.times || ''; o.startDate = o.startDate || ''; o.endDate = o.endDate || o.due; }) }
-    function flowerUnits(o) { return Number(o.pot || 0) + Number(o.pair || 0) * 2 }
+    function normalize() {
+      orders.forEach(o => {
+        o.cycle = o.cycle || '初一初十五';
+        o.unit = o.unit || '盆';
+        o.qty = toNumber(o.qty);
+        o.pot = o.unit === '盆' ? o.qty : 0;
+        o.pair = o.unit === '對' ? o.qty : 0;
+        o.cards = toNumber(o.cards);
+        o.sponge = o.sponge || '1/2 海綿';
+        o.startDate = o.startDate || '';
+        o.endDate = o.endDate || '';
+        o.due = o.endDate || '';
+      });
+    } function flowerUnits(o) { return Number(o.pot || 0) + Number(o.pair || 0) * 2 }
     function dueStatus(o) { let d = daysUntil(o.endDate || o.due); if (d === null) return (o.endDate || o.due) ? 'text' : 'none'; if (d < 0) return 'expired'; if (d <= 60) return 'soon'; return 'normal' }
-    function badge(o) { let s = dueStatus(o); if (s === 'expired') return '<span class="badge bad">已過</span>'; if (s === 'soon') return '<span class="badge warn">快到期</span>'; if (s === 'normal') return '<span class="badge ok">正常</span>'; if (s === 'text') return '<span class="badge info">文字</span>'; return '<span class="badge gray">未填</span>' }
     function cycleText(c) { return c === '初一初十五' ? '初一+初十五' : c === '初二' ? '初二（算初一）' : c || '-' }
     function matchedDates(start, cycle, count) { let types = cycle === '初一初十五' ? ['初一', '初十五'] : cycle === '初二' ? ['初二'] : [cycle]; return LUNAR_EVENTS.filter(e => e.date >= start && types.includes(e.type)).slice(0, Number(count) || 0) }
-    function isFirst(o) { return ['初一', '初一初十五', '初二', '特殊'].includes(o.cycle) }
-    function isFifteen(o) { return o.cycle === '初一初十五' || o.cycle === '初十五' }
     function isSpecial(o) { return /初二|月結|拍照|提前|不用送|聯絡|連絡|LINE/i.test(o.note || '') }
     function filteredOrders() {
       const q = ($('q').value || '').toLowerCase(), c = $('cycleFilter').value, a = $('areaFilter').value, st = $('statusFilter').value;
@@ -808,118 +975,153 @@
         return true;
       }).sort((x, y) => String(x.area).localeCompare(String(y.area), 'zh-Hant') || String(x.name).localeCompare(String(y.name), 'zh-Hant'));
     }
-    function editNotice() {
+    async function editNotice() {
       const current = $('noticeText').textContent.replace(/^公告：/, '');
       const text = prompt('請輸入公告內容', current);
 
       if (text === null) return;
 
-      $('noticeText').textContent = (text.trim() || '');
+      const value = text.trim() || '';
+      $('noticeText').textContent = value;
+
+      try {
+        await api('saveSetting', {
+          key: 'noticeText',
+          value
+        });
+        toast('公告已儲存');
+      } catch (err) {
+        console.error(err);
+        toast('公告儲存失敗：' + err.message);
+      }
+    }
+    function renderNextLunar() {
+      const today = todayText();
+
+      const next = LUNAR_EVENTS
+        .filter(e => e.date >= today && ['初一', '初十五'].includes(e.type))
+        .slice(0, 2);
+
+      $('nextLunarBox').textContent = next.length
+        ? '最近2次日期 ' + next.map(e => `${e.date} ${e.type}`).join('｜')
+        : '';
     }
     function render() {
       const rows = filteredOrders();
       renderStats();
       renderTable(rows);
       renderMobile(rows);
-      const units = rows.reduce((s, o) => s + flowerUnits(o), 0), cards = rows.reduce((s, o) => s + Number(o.cards || 0), 0);
-      const sponge = {}; rows.forEach(o => { let k = o.sponge || '未設定'; sponge[k] = (sponge[k] || 0) + flowerUnits(o) });
       $('countText').textContent = `目前顯示 ${rows.length} 筆 / 全部 ${orders.length} 筆`;
       $('sumText').textContent = '';
     }
 
-function isActiveOnDate(o, eventDate) {
-  const due = parseDate(o.endDate || o.due);
+    function isActiveOnDate(o, eventDate) {
+      const event = parseDate(eventDate);
+      const start = parseDate(o.startDate);
+      const due = parseDate(o.endDate || o.due);
 
-  if (o.startDate && eventDate < o.startDate) return false;
+      if (!event) return false;
 
-  // 沒填到期日，視為持續有效
-  if (!o.endDate && !o.due) return true;
+      if (start && event < start) return false;
 
-  // 有填但不是標準日期，不納入統計
-  if (!due) return false;
+      if (!o.endDate && !o.due) return true;
 
-  return due >= parseDate(eventDate);
-}
+      if (!due) return false;
 
-function addSpongeCount(target, prefix, sponge, actualPots) {
-  if (sponge.includes('1/3')) {
-    target[prefix + 'Sponge13'] += actualPots;
-  } else if (sponge.includes('花束')) {
-    target[prefix + 'Bouquet'] += actualPots;
-  } else {
-    target[prefix + 'Sponge12'] += actualPots;
-  }
-}
+      return due >= event;
+    }
 
-function calcStats(list) {
-  const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-  const thisMonthEvents = LUNAR_EVENTS.filter(e => e.date.startsWith(month));
+    function addSpongeCount(target, prefix, sponge, actualPots) {
+      if (sponge.includes('1/3')) {
+        target[prefix + 'Sponge13'] += actualPots;
+      } else if (sponge.includes('花束')) {
+        target[prefix + 'Bouquet'] += actualPots;
+      } else {
+        target[prefix + 'Sponge12'] += actualPots;
+      }
+    }
 
-  const base = {
-    firstPot: 0, firstPair: 0,
-    fifteenPot: 0, fifteenPair: 0,
-    firstSponge13: 0, firstSponge12: 0, firstBouquet: 0,
-    fifteenSponge13: 0, fifteenSponge12: 0, fifteenBouquet: 0,
-    areas: {}
-  };
+    function calcStats(list) {
+      const today = todayDate();
+      const month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
 
-  function addArea(area) {
-    if (!base.areas[area]) {
-      base.areas[area] = {
-        firstPot: 0, firstPair: 0,
-        fifteenPot: 0, fifteenPair: 0
+      const thisMonthEvents = LUNAR_EVENTS.filter(e =>
+        e.date.startsWith(month) &&
+        ['初一', '初二', '初十五'].includes(e.type)
+      );
+
+      const base = {
+        firstPot: 0,
+        firstPair: 0,
+        fifteenPot: 0,
+        fifteenPair: 0,
+        firstSponge13: 0,
+        firstSponge12: 0,
+        firstBouquet: 0,
+        fifteenSponge13: 0,
+        fifteenSponge12: 0,
+        fifteenBouquet: 0,
+        areas: {}
       };
-    }
-    return base.areas[area];
-  }
 
-  list.forEach(o => {
-    const pot = Number(o.pot || 0);
-    const pair = Number(o.pair || 0);
-    const actualPots = pot + pair * 2;
-    const sponge = o.sponge || '1/2 海綿';
-    const area = addArea(o.area || '未分類');
+      function addArea(area) {
+        if (!base.areas[area]) {
+          base.areas[area] = {
+            firstPot: 0,
+            firstPair: 0,
+            fifteenPot: 0,
+            fifteenPair: 0
+          };
+        }
+        return base.areas[area];
+      }
 
-    const hasFirstThisMonth = thisMonthEvents.some(e =>
-      ['初一', '初二'].includes(e.type) &&
-      (
-        (o.cycle === '初一初十五' && e.type === '初一') ||
-        (o.cycle === '初一' && e.type === '初一') ||
-        (o.cycle === '初二' && e.type === '初二')
-      ) &&
-      isActiveOnDate(o, e.date)
-    );
+      function matchCycle(o, eventType) {
+        if (eventType === '初一') {
+          return o.cycle === '初一' || o.cycle === '初一初十五';
+        }
 
-    const hasFifteenThisMonth = thisMonthEvents.some(e =>
-      e.type === '初十五' &&
-      ['初十五', '初一初十五'].includes(o.cycle) &&
-      isActiveOnDate(o, e.date)
-    );
+        if (eventType === '初二') {
+          return o.cycle === '初二';
+        }
 
-    if (hasFirstThisMonth) {
-      base.firstPot += pot;
-      base.firstPair += pair;
-      area.firstPot += pot;
-      area.firstPair += pair;
-      addSpongeCount(base, 'first', sponge, actualPots);
-    }
+        if (eventType === '初十五') {
+          return o.cycle === '初十五' || o.cycle === '初一初十五';
+        }
 
-    if (hasFifteenThisMonth) {
-      base.fifteenPot += pot;
-      base.fifteenPair += pair;
-      area.fifteenPot += pot;
-      area.fifteenPair += pair;
-      addSpongeCount(base, 'fifteen', sponge, actualPots);
-    }
-  });
+        return false;
+      }
 
-  return base;
-}
-    function activeOrders() {
-      return orders.filter(o => {
-        const s = dueStatus(o);
-        return s !== 'expired' && s !== 'text';
+      thisMonthEvents.forEach(e => {
+        list.forEach(o => {
+          if (!matchCycle(o, e.type)) return;
+          if (!isActiveOnDate(o, e.date)) return;
+
+          const pot = toNumber(o.pot);
+          const pair = toNumber(o.pair);
+          const actualPots = pot + pair * 2;
+          const sponge = o.sponge || '1/2 海綿';
+          const area = addArea(o.area || '未分類');
+
+          if (e.type === '初一' || e.type === '初二') {
+            base.firstPot += pot;
+            base.firstPair += pair;
+            area.firstPot += pot;
+            area.firstPair += pair;
+            addSpongeCount(base, 'first', sponge, actualPots);
+          }
+
+          if (e.type === '初十五') {
+            base.fifteenPot += pot;
+            base.fifteenPair += pair;
+            area.fifteenPot += pot;
+            area.fifteenPair += pair;
+            addSpongeCount(base, 'fifteen', sponge, actualPots);
+          }
+        });
       });
+
+      return base;
     }
     function renderStats() {
       const s = calcStats(orders);
@@ -980,7 +1182,7 @@ function calcStats(list) {
     </div>
   `;
     }
-    
+
     function renderTable(rows) {
       $('tbody').innerHTML = rows.map(o => `<tr>
     <td class="name"><b>${esc(o.name)}</b></td>
@@ -990,9 +1192,9 @@ function calcStats(list) {
 <td>${o.cards || 0}張</td>
 <td class="sponge">${esc(o.sponge || '未設定')}</td>
     <td><span class="badge info">${cycleText(o.cycle)}</span></td>
-<td>${esc(o.endDate || o.due || '-')}${o.times ? `<div class="muted">共 ${o.times} 次，開始 ${o.startDate}</div>` : ''}</td>
+<td>${esc(o.endDate || o.due || '-')}</td>
     <td class="note">${esc(o.note || '')}</td>
-    <td class="actions"><button class="small light" onclick="openDrawer('edit',${o.id})">修改</button></td>
+    <td class="actions"><button class="small light" onclick="openDrawer('edit','${esc(o.id)}')">修改</button></td>
   </tr>`).join('');
       const densityConfig = {
         large: { padding: '14px 12px', fontSize: '16px' },
@@ -1017,7 +1219,7 @@ function calcStats(list) {
     </div>
     <div class="field" style="margin-top:8px"><b>卡片</b><br>${esc(o.card)}</div>
     <div class="field" style="margin-top:8px"><b>備註</b><br>${esc(o.note || '')}</div>
-    <div style="margin-top:8px"><button class="small light" onclick="openDrawer('edit',${o.id})">修改</button></div>
+    <div style="margin-top:8px"><button class="small light" onclick="openDrawer('edit','${esc(o.id)}')">修改</button></div>
   </div>`).join('');
     }
     function clearFilters() {
@@ -1063,58 +1265,136 @@ function calcStats(list) {
         $('drawerHint').textContent = '填完後會直接加到首頁清單。';
         $('editId').value = '';
         ['fName', 'fArea', 'fCard', 'fNote'].forEach(x => $(x).value = '');
-        $('fQty').value = 1; $('fCards').value = 1; $('fTimes').value = 12; $('fStart').value = '2026-05-01'; $('fCycle').value = '初一初十五'; $('fSponge').value = '1/2 海綿';
+        $('fQty').value = 1;
+        $('fCards').value = 1;
+        $('fTimes').value = 2;
+        $('fStart').value = todayText();
+        $('fCycle').value = '初一初十五';
+        $('fSponge').value = '1/2 海綿';
         document.querySelector('input[name="unit"][value="盆"]').checked = true;
       } else {
-        const o = orders.find(x => x.id === id);
+        const o = orders.find(x => String(x.id) === String(id));
+        if (!o) {
+          toast('找不到這筆資料，請重新整理');
+          return;
+        }
         $('drawerTitle').textContent = '修改客戶';
-        $('drawerHint').textContent = '測試';
         $('editId').value = o.id; $('fName').value = o.name || ''; $('fArea').value = o.area || ''; $('fCard').value = o.card || ''; $('fNote').value = o.note || '';
-        $('fQty').value = o.qty || 1; $('fCards').value = o.cards || 0; $('fTimes').value = o.times || 12; $('fStart').value = o.startDate || '2026-05-01'; $('fCycle').value = ['初一初十五', '初一', '初二', '初十五'].includes(o.cycle) ? o.cycle : '初一初十五'; $('fSponge').value = o.sponge || '1/2 海綿';
+        $('fQty').value = o.qty || 1; $('fCards').value = o.cards || 0; $('fTimes').value = o.times || 12; $('fStart').value = o.startDate || todayText(); $('fCycle').value = ['初一初十五', '初一', '初二', '初十五'].includes(o.cycle) ? o.cycle : '初一初十五'; $('fSponge').value = o.sponge || '1/2 海綿';
         document.querySelector(`input[name="unit"][value="${o.unit || '盆'}"]`).checked = true;
       }
       preview();
     }
     function closeDrawer() { $('drawer').classList.remove('show') }
-    function saveForm() {
-      const name = $('fName').value.trim(), area = $('fArea').value.trim(), card = $('fCard').value.trim(), start = $('fStart').value;
-      const cycle = $('fCycle').value, times = +$('fTimes').value || 0, qty = +$('fQty').value || 0, unit = document.querySelector('input[name="unit"]:checked').value;
-      if (!name || !area || !start || !times || !qty) { toast('客戶、地區、開始日、次數、數量都要填'); return }
-      const dates = matchedDates(start, cycle, times); if (dates.length < times) { toast('農曆資料不足，無法算完這麼多次'); return }
-      let note = $('fNote').value.trim(); if (cycle === '初二' && !note.includes('初二')) note = (note ? note + '；' : '') + '初二才送';
-      const id = $('editId').value;
-      const obj = { area, name, card, pot: unit === '盆' ? qty : 0, pair: unit === '對' ? qty : 0, cards: +$('fCards').value || 0, note, due: dates[dates.length - 1].date, cycle, unit, qty, sponge: $('fSponge').value, times, startDate: start, endDate: dates[dates.length - 1].date, done: false };
-      if (id) {
-        const idx = orders.findIndex(x => String(x.id) === String(id)); orders[idx] = { ...orders[idx], ...obj };
-        toast('已更新畫面資料');
-      } else {
-        obj.id = Math.max(...orders.map(x => x.id)) + 1; orders.unshift(obj); toast('已新增到首頁');
+    async function saveForm() {
+      if (saving) return;
+      saving = true;
+      const name = $('fName').value.trim();
+      const area = $('fArea').value.trim();
+      const card = $('fCard').value.trim();
+      const start = $('fStart').value;
+      const cycle = $('fCycle').value;
+      const times = +$('fTimes').value || 0;
+      const qty = +$('fQty').value || 0;
+      const unit = document.querySelector('input[name="unit"]:checked').value;
+
+      if (!name || !area || !start || !times || !qty) {
+        toast('客戶、地區、開始日、次數、數量都要填');
+        saving = false;
+        return;
       }
-      setupOptions(); render(); closeDrawer();
+
+      const dates = matchedDates(start, cycle, times);
+
+      if (dates.length < times) {
+        toast('農曆資料不足，無法算完這麼多次');
+        saving = false;
+        return;
+      }
+
+      let note = $('fNote').value.trim();
+
+      if (cycle === '初二' && !note.includes('初二')) {
+        note = (note ? note + '；' : '') + '初二才送';
+      }
+
+      const id = $('editId').value;
+
+      const obj = {
+        id,
+        area,
+        name,
+        card,
+        unit,
+        qty,
+        pot: unit === '盆' ? qty : 0,
+        pair: unit === '對' ? qty : 0,
+        cards: +$('fCards').value || 0,
+        note,
+        cycle,
+        sponge: $('fSponge').value,
+        times,
+        startDate: start,
+        endDate: dates[dates.length - 1].date,
+        due: dates[dates.length - 1].date
+      };
+
+      try {
+        setLoading(true);
+        toast('儲存中...');
+        const json = await api('saveOrder', frontOrderToGas(obj));
+        if (!json.ok) throw new Error(json.message || '儲存失敗');
+        await loadData();
+        closeDrawer();
+        toast('已儲存');
+      } catch (err) {
+        console.error(err);
+        toast('儲存失敗：' + err.message);
+      } finally {
+        saving = false;
+        setLoading(false);
+      }
     }
-    function deleteCurrent() {
-      const id = $('editId').value; if (!id) return;
-      if (confirm('原型資料會從畫面移除，確定刪除？')) { orders = orders.filter(x => String(x.id) !== String(id)); render(); closeDrawer(); toast('已刪除') }
+    async function deleteCurrent() {
+      if (deleting) return;
+
+      const id = $('editId').value;
+      if (!id) return;
+
+      if (!confirm('確定刪除這筆？')) return;
+
+      deleting = true;
+
+      try {
+        setLoading(true);
+        toast('刪除中...');
+        const json = await api('deleteOrder', { id });
+
+        if (!json.ok) throw new Error(json.message || '刪除失敗');
+
+        await loadData();
+        closeDrawer();
+        toast('已刪除');
+      } catch (err) {
+        console.error(err);
+        toast('刪除失敗：' + err.message);
+      } finally {
+        deleting = false;
+        setLoading(false);
+      }
     }
-    function copyNotice(id) {
-      const o = orders.find(x => x.id === id);
-      const text = `${o.name}您好，拜拜花最後一次供花日為 ${o.endDate || o.due || '未填'}，提醒您確認續約/收款狀態，謝謝。`;
-      navigator.clipboard?.writeText(text); toast('已複製通知文字');
-    }
-    function exportCsv() {
-      const rows = filteredOrders();
-      const header = ['地區', '名字', '卡片下款', '單位', '數量', '盆', '對', '海綿', '規則', '購買次數', '開始供花日', '最後一次供花日', '卡片數', '注意事項'];
-      const csv = [header, ...rows.map(o => [o.area, o.name, o.card, o.unit, o.qty, o.pot, o.pair, o.sponge, o.cycle, o.times, o.startDate, o.endDate || o.due, o.cards, o.note])].map(r => r.map(v => '"' + String(v ?? '').replaceAll('"', '""') + '"').join(',')).join('\n');
-      let a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' })); a.download = '拜拜花_目前清單.csv'; a.click();
-    }
+
     function toast(t) { $('toast').textContent = t; $('toast').classList.add('show'); setTimeout(() => $('toast').classList.remove('show'), 2200) }
+    function setLoading(show) {
+      const hasImage = $('loadingBox').querySelector('img');
+      $('loadingMask').classList.toggle('show', !!show && !!hasImage);
+    }
     function setupOptions() {
       const areas = [...new Set(orders.map(o => o.area).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-Hant'));
       $('areaFilter').innerHTML = '<option value="">全部地區</option>' + areas.map(a => `<option>${esc(a)}</option>`).join('');
       $('areaOptions').innerHTML = areas.map(a => `<option value="${esc(a)}"></option>`).join('');
     }
-    function setup() { normalize(); setupOptions(); render(); preview() }
-    setup();
+    loadData();
   </script>
 </body>
 
