@@ -577,6 +577,20 @@
     }
 
     @media(max-width:760px) {
+      .noticeRow {
+        grid-template-columns: 1fr;
+      }
+
+      .nextLunarBox {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      .noticeBar {
+        width: 100%;
+      }
+
       .wrap {
         padding: 12px
       }
@@ -615,6 +629,22 @@
         top: 10px;
         bottom: 10px;
         width: auto
+      }
+    }
+
+    @media(max-width:900px) {
+      .noticeRow {
+        grid-template-columns: 1fr;
+      }
+
+      .nextLunarBox {
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+
+      .noticeBar {
+        width: 100%;
       }
     }
 
@@ -676,7 +706,6 @@
       <div class="noticeBar" onclick="editNotice()">
         <span id="noticeText" class="noticeTrack"></span>
       </div>
-
       <div id="nextLunarBox" class="nextLunarBox"></div>
     </div>
     <section class="panel">
