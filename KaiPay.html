@@ -829,8 +829,8 @@ ${pageUrl}
       const payment = getSelectedPayment();
       const bank = payment.bank;
       const account = payment.needAccount ? accountInput.value.trim() : '';
-      const allMembers = [u.name, ...members];
-      const avg = Math.floor(totalNum / allMembers.length);
+      const participantCount = members.length + 1;
+      const avg = Math.ceil(totalNum / participantCount);
 
       if (!bank) {
         createErr.innerText = '請選擇付款方式';
@@ -849,7 +849,7 @@ ${pageUrl}
           createdBy: u.name,
           bank,
           account,
-          splits: allMembers.map(n => ({
+          splits: members.map(n => ({
             name: n,
             amount: avg
           }))
