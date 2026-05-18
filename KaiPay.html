@@ -322,7 +322,7 @@
   </div>
 
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxoX5juqIqqugTMkvAzn5fjXDGV8GnauJ4qv-23jd9YfktQE56sCmu-uWgVIHc15Ohe7g/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyxl5qVhMxgoJVWs0w1GY0kr8xt7Lz-BAqyMvnweNq6VgCbKBAFLpFtgw3FoixcsmjkBQ/exec';
 
     let USERS = [];
     let DB = [];
@@ -772,12 +772,14 @@ ${pageUrl}
         const u = USERS[opt.dataset.index];
         name = u.name;
       }
-
       const creatorName = USERS[creatorSelect.value].name;
 
-      if (name === creatorName) return;
-      if (members.includes(name)) return;
+      if (name === creatorName) {
+        showToast('建立人已自動加入');
+        return;
+      }
 
+      if (members.includes(name)) return;
       members.push(name);
       renderMembers();
       renderCreateMemberSelect();
@@ -823,16 +825,16 @@ ${pageUrl}
         return;
       }
 
-      if (members.length < 1) {
+      if ([u.name, ...members].length < 1) {
         createErr.innerText = '請至少新增 1 位分帳人';
         return;
       }
-
       const u = USERS[creatorSelect.value];
       const payment = getSelectedPayment();
       const bank = payment.bank;
       const account = payment.needAccount ? accountInput.value.trim() : '';
-      const avg = Math.round(totalNum / members.length);
+      const allMembers = [u.name, ...members];
+      const avg = Math.floor(totalNum / allMembers.length);
 
       if (!bank) {
         createErr.innerText = '請選擇付款方式';
@@ -851,7 +853,7 @@ ${pageUrl}
           createdBy: u.name,
           bank,
           account,
-          splits: members.map(n => ({
+          splits: allMembers.map(n => ({
             name: n,
             amount: avg
           }))
@@ -916,12 +918,14 @@ ${pageUrl}
     function updateSummary(sum, unpaidSum) {
       unpaidAmount.innerText = unpaidSum;
 
-      const diffValue = sum - Number(current.total || 0);
+      const diffValue = Number(current.total || 0) - sum;
 
-      if (diffValue !== 0) {
-        const abs = Math.abs(diffValue);
-        const text = diffValue > 0 ? `多 ${abs}` : `少 ${abs}`;
-        diffText.innerText = `金額與總金額不符合（${text}）`;
+      if (diffValue > 0) {
+        diffText.innerText =
+          `建立人吸收 $${diffValue}`;
+      } else if (diffValue < 0) {
+        diffText.innerText =
+          `建立人多收 $${Math.abs(diffValue)}`;
       } else {
         diffText.innerText = '';
       }
