@@ -825,10 +825,6 @@ ${pageUrl}
         return;
       }
 
-      if ([u.name, ...members].length < 1) {
-        createErr.innerText = '請至少新增 1 位分帳人';
-        return;
-      }
       const u = USERS[creatorSelect.value];
       const payment = getSelectedPayment();
       const bank = payment.bank;
