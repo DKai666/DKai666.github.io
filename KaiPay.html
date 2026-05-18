@@ -914,14 +914,18 @@ ${pageUrl}
     function updateSummary(sum, unpaidSum) {
       unpaidAmount.innerText = unpaidSum;
 
-      const diffValue = Number(current.total || 0) - sum;
+      const total = Number(current.total || 0);
+      const participantCount = current.splits.length + 1;
+
+      const creatorShouldPay = total / participantCount;
+      const creatorActualPay = total - sum;
+
+      const diffValue =
+        Math.round((creatorShouldPay - creatorActualPay) * 100) / 100;
 
       if (diffValue > 0) {
         diffText.innerText =
-          `建立人吸收 $${diffValue}`;
-      } else if (diffValue < 0) {
-        diffText.innerText =
-          `建立人多收 $${Math.abs(diffValue)}`;
+          `因為無法整除，所以建立人少付 $${diffValue}`;
       } else {
         diffText.innerText = '';
       }
